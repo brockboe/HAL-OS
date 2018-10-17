@@ -3,7 +3,7 @@
 #define _PAGING_H
 
 /* TODO: Implement paging initialization function header */
-/* TODO: Design test suite for paging? */
+/* TODO: Design test suite for paging */
 
 
 
