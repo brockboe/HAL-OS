@@ -26,6 +26,11 @@ ldt_desc:
     .word KERNEL_LDT
     .long ldt
 
+gdt_desc:
+      .word 0
+      .word gdt_bottom - gdt - 1
+      .long gdt
+
     .align 4
 tss:
 _tss:
