@@ -4,6 +4,7 @@
 
 .globl common_interrupt
 .globl assembly_linkage
+.globl default_linkage
 
 interrupt_num:
       .long 0
@@ -111,6 +112,70 @@ _15:
       MOVL $15, interrupt_num
       JMP common_interrupt
 
+_16:
+      MOVL $16, interrupt_num
+      JMP common_interrupt
+
+_17:
+      MOVL $17, interrupt_num
+      JMP common_interrupt
+
+_18:
+      MOVL $18, interrupt_num
+      JMP common_interrupt
+
+_19:
+      MOVL $19, interrupt_num
+      JMP common_interrupt
+
+_20:
+      MOVL $20, interrupt_num
+      JMP common_interrupt
+
+_21:
+      MOVL $21, interrupt_num
+      JMP common_interrupt
+
+_22:
+      MOVL $22, interrupt_num
+      JMP common_interrupt
+
+_23:
+      MOVL $23, interrupt_num
+      JMP common_interrupt
+
+_24:
+      MOVL $24, interrupt_num
+      JMP common_interrupt
+
+_25:
+      MOVL $25, interrupt_num
+      JMP common_interrupt
+
+_26:
+      MOVL $26, interrupt_num
+      JMP common_interrupt
+
+_27:
+      MOVL $27, interrupt_num
+      JMP common_interrupt
+
+_28:
+      MOVL $28, interrupt_num
+      JMP common_interrupt
+
+_29:
+      MOVL $29, interrupt_num
+      JMP common_interrupt
+
+_30:
+      MOVL $30, interrupt_num
+      JMP common_interrupt
+
+default_linkage:
+      MOVL $256, interrupt_num
+      JMP common_interrupt
+
 assembly_linkage:
       .long _0
       .long _1
@@ -128,3 +193,18 @@ assembly_linkage:
       .long _13
       .long _14
       .long _15
+      .long _16
+      .long _17
+      .long _18
+      .long _19
+      .long _20
+      .long _21
+      .long _22
+      .long _23
+      .long _24
+      .long _25
+      .long _26
+      .long _27
+      .long _28
+      .long _29
+      .long _30

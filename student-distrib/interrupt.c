@@ -2,118 +2,102 @@
 #include "types.h"
 #include "debug.h"
 #include "x86_desc.h"
+#include "int_handlers.h"
 
-#define VIDEO 0xB8000
-#define NUM_COLS 80
-#define NUM_ROWS 25
-#define RED 0xC
+/*Total number of Intel-Defined interrupts*/
+#define NUM_INTEL_INTERRUPTS 30
+/*Total number of possible interrupt vectors (even though most will be unused)*/
+#define TOTAL_VECTOR_NUM 256
 
-#define NUM_INTERRUPTS 16
+/*assembly_linkage is an array of functions that are called whenever
+ *an intel-defined interrupt occurs. Every entry pushes the vector Number
+ *and then calls common_interrupt
+ */
+extern void * assembly_linkage[NUM_INTEL_INTERRUPTS];
 
-extern void (*assembly_linkage[NUM_INTERRUPTS])();
+/*defualt_linkage is an external function that pushes 256 and then
+ *calls common_interrupt. Because the highest possible vector number
+ *is 255, whenever default_linkage is called we can know with certanty
+ *that this interrupt as not been set up yet.
+ */
+extern void default_linkage();
 
+/*An array of pointers towards the functions that handle interrupts.
+ *Whenever an interrupt is occured, this array is used to find the
+ *handler associated with an interrupt vector.
+ */
+
+void (*handler_table[TOTAL_VECTOR_NUM+1])();
+
+void install_idt_entry(int idt_offset, void handler());
 void RSOD(char * error);
-void install_interrupt(int vect_num, void handler());
-
-void int_zero_handler(){
-      RSOD("EXCEPTION 0: DIVIDE BY ZERO ERROR");
-}
-
-void int_one_handler(){
-      RSOD("EXCEPTION 1: RESERVED - Intel Use only");
-}
-
-void int_two_handler(){
-      RSOD("EXCEPTION 2: NMI - non-maskable interrupt occured");
-}
-
-void int_three_handler(){
-      RSOD("EXCEPTION 3: BREAKPOINT  - INT 3 called");
-}
-
-void int_four_handler(){
-      RSOD("EXCEPTION 4: OVERFLOW ERROR - INTO instruction called");
-}
-
-void int_five_handler(){
-      RSOD("EXCEPTION 6: BOUND RANGE EXCEEDED - Check BOUND instructions");
-}
-
-void int_six_handler(){
-      RSOD("EXCEPTION 6: INVALID OPCODE - Check assembly code");
-}
-
-void int_seven_handler(){
-      RSOD("EXCEPTION 7: DEVICE NOT AVAILABLE");
-}
-
-void int_eight_handler(){
-      RSOD("EXCEPTION 8: DOUBLE FAULT");
-}
-
-void int_nine_handler(){
-      RSOD("EXCEPTION 9: COPROCESSOR SEGMENT OVERRUN");
-}
-
-void int_ten_handler(){
-      RSOD("EXCEPTION 10: INVALID TSS");
-}
-
-void int_eleven_handler(){
-      RSOD("EXCEPTION 11: SEGMENT NOT PRESENT");
-}
-
-void int_twelve_handler(){
-      RSOD("EXCEPTION 12: STACK-SEGMENT FAULT");
-}
-
-void int_thirteen_handler(){
-      RSOD("EXCEPTION 13: GENERAL PROTECTION FAULT");
-}
-
-void int_fourteen_handler(){
-      RSOD("EXCEPTION 14: PAGE FAULT");
-}
-
-void int_fifteen_handler(){
-      RSOD("EXCEPTION 15: assertion_failure() called");
-}
-
-void int_sixteen_handler(){
-      RSOD("EXCEPTION 16: FPU FLOATING-POINT ERROR");
-}
-
-void int_seventeen_handler(){
-      RSOD("EXCEPTION 17: ALIGNMENT CHECK");
-}
-
-void int_eighteen_handler(){
-      RSOD("EXCEPTION 18: MACHINE CHECK");
-}
-
-void int_nineteen_handler(){
-      RSOD("EXCEPTION 19: SIMD FLOATING-POINT EXCEPTION");
-}
+void install_handler(int vector_num, void handler());
 
 void int_setup(){
       int i;
-      for(i=0; i<NUM_INTERRUPTS; i++){
-            install_interrupt(i, *assembly_linkage[i]);
+
+      /*Ensure that the handler is filled with the default entry:
+       *the default handler does nothing, is simply a "return"
+       *statment that gives control back to the program
+       */
+      for(i = 0; i < TOTAL_VECTOR_NUM+1; i++){
+            install_handler(i, default_handler);
       }
+
+      /*Install the default linkage - pushes vector number 256
+       *which does not exist. This handler in the handler_table
+       *associated with vector 256 is left blank (NULL) so when
+       *it is called, nothing happens and the interrupt ends quickly.
+       *This value is meant to be overwritten whenever an interrupt
+       *is installed on this IDT entry
+       */
+      for(i = 0; i < TOTAL_VECTOR_NUM; i++){
+            install_idt_entry(i, &default_linkage);
+      }
+
+      /*Set up the first few interrupt vectors, which are intel
+       *defined faults, exceptions, and errors.
+       */
+      for(i = 0; i < NUM_INTEL_INTERRUPTS; i++){
+            install_idt_entry(i, assembly_linkage[i]);
+      }
+
+      /*Install the intel handlers into the handler_table*/
+      install_handler(0, int_zero_handler);
+      install_handler(1, int_one_handler);
+      install_handler(2, int_two_handler);
+      install_handler(3, int_three_handler);
+      install_handler(4, int_four_handler);
+      install_handler(5, int_five_handler);
+      install_handler(6, int_six_handler);
+      install_handler(7, int_seven_handler);
+      install_handler(8, int_eight_handler);
+      install_handler(9, int_nine_handler);
+      install_handler(10, int_ten_handler);
+      install_handler(11, int_eleven_handler);
+      install_handler(12, int_twelve_handler);
+      install_handler(13, int_thirteen_handler);
+      install_handler(14, int_fourteen_handler);
+      install_handler(15, int_fifteen_handler);
+      install_handler(16, int_sixteen_handler);
+      install_handler(17, int_seventeen_handler);
+      install_handler(18, int_eighteen_handler);
+      install_handler(19, int_nineteen_handler);
+      install_handler(20, int_twenty_handler);
+      install_handler(30, int_thirty_handler);
 }
 
-void C_int_dispatcher(unsigned long interrupt){
-      switch(interrupt){
-            case 1: int_one_handler(); break;
-            case 2: int_two_handler(); break;
-            case 3: int_three_handler(); break;
-            case 15: int_fifteen_handler(); break;
-            default: break;
-      }
+/*C_int_Dispatcher is called whenever an interrupt occurs. The
+ *linkage gives this function the vector number as argument so
+ *this function then then calls the handler associated with this
+ *interrupt vector
+ */
+void C_int_dispatcher(unsigned long interrupt_vector){
+      handler_table[interrupt_vector]();
       return;
 }
 
-void install_interrupt(int idt_offset, void handler()){
+void install_idt_entry(int idt_offset, void handler()){
       SET_IDT_ENTRY(idt[idt_offset], handler);
       idt[idt_offset].seg_selector = KERNEL_CS;
       idt[idt_offset].reserved3 = 0;
@@ -126,30 +110,10 @@ void install_interrupt(int idt_offset, void handler()){
       return;
 }
 
-void RSOD(char * error){
-      int screen_x, screen_y;
-      int i;
-      char * preface = "I'm sorry Dave, I'm afraid I can't do that";
-      static char* video_mem = (char *)VIDEO;
-
-      clear();
-
-      screen_x = 2;
-      screen_y = 1;
-
-      for(i = 0; preface[i] != 0; i++){
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = preface[i];
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = RED;
-            screen_x++;
-      }
-
-      screen_x = 2;
-      screen_y = 3;
-
-      for(i = 0; error[i] != 0; i++){
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = error[i];
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = RED;
-            screen_x++;
-      }
+/*install_handler automates the process of putting a function
+ *into the handler_table
+ */
+void install_handler(int vector_num, void handler()){
+      handler_table[vector_num] = handler;
       return;
 }
