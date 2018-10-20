@@ -5,6 +5,7 @@
 .globl common_interrupt
 .globl assembly_linkage
 .globl default_linkage
+.globl RTC, keyboard
 
 interrupt_num:
       .long 0
@@ -174,6 +175,14 @@ _30:
 
 default_linkage:
       MOVL $256, interrupt_num
+      JMP common_interrupt
+
+keyboard:
+      MOVL $0x21, interrupt_num
+      JMP common_interrupt
+
+RTC:
+      MOVL $0x28, interrupt_num
       JMP common_interrupt
 
 assembly_linkage:

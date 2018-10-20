@@ -15,6 +15,9 @@
  */
 extern void * assembly_linkage[NUM_INTEL_INTERRUPTS];
 
+extern void keyboard();
+extern void RTC();
+
 /*defualt_linkage is an external function that pushes 256 and then
  *calls common_interrupt. Because the highest possible vector number
  *is 255, whenever default_linkage is called we can know with certanty
@@ -54,6 +57,9 @@ void int_setup(){
       for(i = 0; i < TOTAL_VECTOR_NUM; i++){
             install_idt_entry(i, &default_linkage);
       }
+
+      install_idt_entry(0x20, &keyboard);
+      install_idt_entry(0x28, &RTC);
 
       /*Set up the first few interrupt vectors, which are intel
        *defined faults, exceptions, and errors.
