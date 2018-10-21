@@ -71,7 +71,7 @@ void int_setup(){
             install_idt_entry(i, &default_linkage);
       }
 
-      install_idt_entry(0x20, &keyboard);
+      install_idt_entry(0x21, &keyboard);
       install_idt_entry(0x28, &RTC);
 
       /*Set up the first few interrupt vectors, which are intel
@@ -104,6 +104,7 @@ void int_setup(){
       install_handler(19, int_nineteen_handler);
       install_handler(20, int_twenty_handler);
       install_handler(30, int_thirty_handler);
+      install_handler(0x28, RTC_RSOD);
 }
 
 /*C_int_Dispatcher is called whenever an interrupt occurs. The

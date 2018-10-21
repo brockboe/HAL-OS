@@ -56,16 +56,16 @@ void i8259_init(void) {
 /* Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num) {
     /* First check if below irq_num bounds */
-    if(irqnum < 0 || irqnum > 15)
+    if(irq_num < 0 || irq_num > 15)
     {
         return;
     }
 
     /* if irq > 8, then we know we're working with slave PIC */
-    if(irqnum > 8)
+    if(irq_num > 8)
     {
         /* Lower irqnum to traditional irq value range */
-        irqnum -= 8;
+        irq_num -= 8;
         slave_mask = inb(SLAVE_8259_PORT + 1);
 
         /* Create IRQ mask */
@@ -89,16 +89,16 @@ void enable_irq(uint32_t irq_num) {
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
   /* First check if below irq_num bounds */
-  if(irqnum < 0 || irqnum > 15)
+  if(irq_num < 0 || irq_num > 15)
   {
       return;
   }
 
   /* if irq > 8, then we know we're working with slave PIC */
-  if(irqnum > 8)
+  if(irq_num > 8)
   {
       /* Lower irqnum to traditional irq value range */
-      irqnum -= 8;
+      irq_num -= 8;
       slave_mask = inb(SLAVE_8259_PORT + 1);
 
       /* Create IRQ mask */
@@ -122,7 +122,7 @@ void disable_irq(uint32_t irq_num) {
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     /* First check if below irq_num bounds */
-    if(irqnum < 0 || irqnum > 15)
+    if(irq_num < 0 || irq_num > 15)
     {
         return;
     }

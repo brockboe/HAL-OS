@@ -1,25 +1,25 @@
 #include "types.h"
-#include "paging-header.h"
+#include "paging.h"
 
 #define PAGE_SIZE 1024 //the size of 4kB
 #define PAGING_SHIFT 12 //to get the MS20 bits out by shifting 12 bits right
 
 extern void init_control_reg();
 
-extern uint32_t paging_table[PAGE_TABLE_LEN];
-extern uint32_t directory_paging[PAGE_DIR_LEN];
+extern uint32_t paging_table[PAGE_SIZE];
+extern uint32_t directory_paging[PAGE_SIZE];
 
 
 
 /* init_paging function :
  * DESCRIPTION:  the funcion is being called to enable paging ,
- *               it set up the page directory with only one page table entry and one 4MB page entry of kernel 
- * INPUT : none 
- * OUTPUT : none 
- * PRELIMINARY :  
- *             video memory is 4kB at 0xB8000, which is 0000 0000 00 | 00 1011 1000 | 0000 0000 0000 
- *                                                  directory #  |  table #     | page offset 
- *             thus, the table where pointer to the video mem should be at index 0 of PD 
+ *               it set up the page directory with only one page table entry and one 4MB page entry of kernel
+ * INPUT : none
+ * OUTPUT : none
+ * PRELIMINARY :
+ *             video memory is 4kB at 0xB8000, which is 0000 0000 00 | 00 1011 1000 | 0000 0000 0000
+ *                                                  directory #  |  table #     | page offset
+ *             thus, the table where pointer to the video mem should be at index 0 of PD
  *             and the pointer to there the video mem is should be at index 0xB8 of PT
  *  -------------------------------------------------------------------------------------------------
  *             kernel memory is 4 MB at 0x400000, which is  0000 0000 01| 00 0000 0000 | 0000 0000 0000
@@ -27,19 +27,18 @@ extern uint32_t directory_paging[PAGE_DIR_LEN];
  *             with us set to 0
 */
 void init_paging(){
-          int i;
 
         // set the first entry in PD pointing to the PT,
           page_directory_entry_4kb_t tmp;
-        //   to set paging present to be 1, 
+        //   to set paging present to be 1,
         //   enable write and read, set the page to public,
-        //   enable write through 
-        //   enable cache 
-        //   set accessed to be 0 at the beginning 
-        //   page size is 4kB 
-        //   set ignore bit to be 0 
-        //   set available 3 bits to be 0 since we dont care 
-        //   set the paging base address to be the table we decleared earlier 
+        //   enable write through
+        //   enable cache
+        //   set accessed to be 0 at the beginning
+        //   page size is 4kB
+        //   set ignore bit to be 0
+        //   set available 3 bits to be 0 since we dont care
+        //   set the paging base address to be the table we decleared earlier
           tmp.present = 1;
           tmp.wr = 1;
           tmp.us = 1;
@@ -51,18 +50,18 @@ void init_paging(){
           tmp.g =0;
           tmp.available = 0;
           tmp.table_base_addr = ((uint32_t)paging_table >> PAGING_SHIFT);
-          directory_paging[0] = (uint32_t) tmp.val; //add entry to the pd. 
+          directory_paging[0] = (uint32_t) tmp.val; //add entry to the pd.
 
-        //set the 0xB8 entry in the PT pointing to the physical video memory 
+        //set the 0xB8 entry in the PT pointing to the physical video memory
          page_table_entry_t temp;
-        //   to set paging present to be 1, 
+        //   to set paging present to be 1,
         //   enable write and read, set the page to public,
-        //   enable write through 
-        //   enable cache 
-        //   set accessed to be 0 at the beginning 
-        //   page size is 4kB 
-        //   set ignore bit to be 0 
-        //   set available 3 bits to be 0 since we dont care 
+        //   enable write through
+        //   enable cache
+        //   set accessed to be 0 at the beginning
+        //   page size is 4kB
+        //   set ignore bit to be 0
+        //   set available 3 bits to be 0 since we dont care
         //   set the paging base address to be the video memory 0xB8
          temp.present = 1;
          temp.wr = 1;
@@ -77,17 +76,17 @@ void init_paging(){
          temp.physical_page_addr = (0x000B8);
          paging_table[0xB8] = (uint32_t)temp.val;
 
-        // set the second entry of PD pointing to the kernel space 
-          page_directory_entry_4mb_t temp_kernel;   
-        //   to set paging present to be 1, 
+        // set the second entry of PD pointing to the kernel space
+          page_directory_entry_4mb_t temp_kernel;
+        //   to set paging present to be 1,
         //   enable write and read, set the page to public,
-        //   enable write through 
-        //   enable cache 
-        //   set accessed to be 0 at the beginning 
-        //   page size is 4kB 
-        //   set ignore bit to be 0 
-        //   set available 3 bits to be 0 since we dont care 
-        //   set the paging base address to be kernel address 
+        //   enable write through
+        //   enable cache
+        //   set accessed to be 0 at the beginning
+        //   page size is 4kB
+        //   set ignore bit to be 0
+        //   set available 3 bits to be 0 since we dont care
+        //   set the paging base address to be kernel address
           temp_kernel.present = 1;
           temp_kernel.wr = 1;
           temp_kernel.us = 0;

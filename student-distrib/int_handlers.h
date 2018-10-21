@@ -138,6 +138,10 @@ void int_thirty_handler(void){
       RSOD("EXCEPTION 30: SECURITY EXCEPTION");
 }
 
+void RTC_RSOD(){
+      RSOD("RTC Interrupt Received");
+}
+
 /*default_handler is installed for all handlers and does nothing when called but returns*/
 
 void default_handler(void){

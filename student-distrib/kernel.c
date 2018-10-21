@@ -10,6 +10,8 @@
 #include "tests.h"
 
 #include "int_setup.h"
+#include "rtc.h"
+#include "keyboard.h"
 
 #define RUN_TESTS
 
