@@ -104,7 +104,8 @@ void int_setup(){
       install_handler(19, int_nineteen_handler);
       install_handler(20, int_twenty_handler);
       install_handler(30, int_thirty_handler);
-      install_handler(0x28, RTC_RSOD);
+      install_handler(0x28, rtc_interrupt_handler);
+      install_handler(0x21, keyboard_handler);
 }
 
 /*C_int_Dispatcher is called whenever an interrupt occurs. The

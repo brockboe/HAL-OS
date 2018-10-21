@@ -5,6 +5,10 @@
  *a scary error message listing the exception.
  */
 
+#include "lib.h"
+#include "i8259.h"
+#include "rtc.h"
+
 #define VIDEO 0xB8000
 #define NUM_COLS 80
 #define NUM_ROWS 25
@@ -138,8 +142,10 @@ void int_thirty_handler(void){
       RSOD("EXCEPTION 30: SECURITY EXCEPTION");
 }
 
-void RTC_RSOD(){
-      RSOD("RTC Interrupt Received");
+void keyboard_handler(){
+      send_eoi(1);
+      enable_irq(1);
+      return;
 }
 
 /*default_handler is installed for all handlers and does nothing when called but returns*/
