@@ -144,7 +144,7 @@ do {                                                            \
     str.seg_lim_15_00 = (lim) & 0x0000FFFF;                     \
 } while (0)
 
-/* An interrupt descriptor entry (goes into the IDT) */
+/* An interrupt descriptor entry (goes into the IDT) */  
 typedef union idt_desc_t {
     uint32_t val[2];
     struct {
