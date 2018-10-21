@@ -2,10 +2,8 @@
 #ifndef _KEYBOARD_H
 #define _KEYBOARD_H
 
-/* TODO: Implement keyboard initialization function header */
-/* TODO: Design test suite for keyboard */
+#define KEYBOARD_IRQ_ON_MASTER 0x01
 
-
-
+void keyboard_init(void);
 
 #endif  /* _KEYBOARD_H */
