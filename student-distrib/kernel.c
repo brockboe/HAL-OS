@@ -139,10 +139,17 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the PIC */
     i8259_init();
 
+    /* Init the RTC */
+    rtc_init();
+
+    /* Init the keyboard */
+    keyboard_init();
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
     /* Enable interrupts */
+
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
