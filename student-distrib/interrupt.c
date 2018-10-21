@@ -1,3 +1,9 @@
+/*interrupt.c
+ *This file contains macros and definitions necessary for setting up the
+ *IDT table, and installing and removing interrupt handlers. The functions in
+ *this file work in conjunction with the assembly linkage found in int_setup.S
+ */
+
 #include "lib.h"
 #include "types.h"
 #include "debug.h"
@@ -15,6 +21,7 @@
  */
 extern void * assembly_linkage[NUM_INTEL_INTERRUPTS];
 
+/*These are the linkage files for the keyboard and RTC*/
 extern void keyboard();
 extern void RTC();
 
@@ -36,6 +43,12 @@ void install_idt_entry(int idt_offset, void handler());
 void RSOD(char * error);
 void install_handler(int vector_num, void handler());
 
+/* int_setup()
+ * This function initializes the IDT entries and sets up everything
+ * necessary for the first 30 intel-defined exceptions. It takes no
+ * arguments and returns nothing. It installs the necessary handlers
+ * and IDT linkages.
+ */
 void int_setup(){
       int i;
 
@@ -103,6 +116,11 @@ void C_int_dispatcher(unsigned long interrupt_vector){
       return;
 }
 
+/*install_idt_entry()
+ *This takes an idt vector number and a pointer to a handler (which
+ * is an assembly linkage in our case) and creates an entry in the IDT
+ * table.
+ */
 void install_idt_entry(int idt_offset, void handler()){
       SET_IDT_ENTRY(idt[idt_offset], handler);
       idt[idt_offset].seg_selector = KERNEL_CS;

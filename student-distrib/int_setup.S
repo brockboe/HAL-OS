@@ -1,3 +1,10 @@
+#int_setup.S
+#This file provides an assembly linkage between the interrupt vector
+#table and the C files found in interrupt.C. It contains common_interrupt,
+#Which simply provides a link to the C functions, and a collection of
+#small, 2-line functions that save the vector number (for later use) and
+#then jump to common_interrupt.
+
 .extern C_int_dispatcher
 
 .text
@@ -7,6 +14,7 @@
 .globl default_linkage
 .globl RTC, keyboard
 
+#This is where the interrupt number is saved so it can be pushed later
 interrupt_num:
       .long 0
 
@@ -14,6 +22,8 @@ common_interrupt:
       #Save all the interrupts
       #PUSHL return address
       #PUSHL IRQ number
+
+      #Save all the Registers
       PUSHW %FS
       PUSHW $0
       PUSHW %ES
@@ -27,12 +37,15 @@ common_interrupt:
       PUSHL %EDX
       PUSHL %ECX
       PUSHL %EBX
+      #Push the interrupt_num as argument
       PUSHL interrupt_num
-      #PUSHL linkage return address
 
+      #Call the dispatcher so we're now working in C
       CALL C_int_dispatcher
 
+      #Clear the argument
       ADDL $4, %ESP
+      #Restore all the registers
       POPL %EBX
       POPL %ECX
       POPL %EDX
@@ -48,6 +61,11 @@ common_interrupt:
       POPW %FS
 
       IRET
+
+#The following functions are linkage functions that are jumped to
+#whenever the associated IDT vector number is called. They push
+#The associated vector as argument and then call common_interrupt
+#which then further acts upon the interrupt.
 
 _0:
       MOVL $0, interrupt_num
@@ -185,6 +203,9 @@ RTC:
       MOVL $0x28, interrupt_num
       JMP common_interrupt
 
+#This is a table containing pointers to the linkage functions
+#that push the interrupt vector number and then jump to the
+#common_interupt function.
 assembly_linkage:
       .long _0
       .long _1
