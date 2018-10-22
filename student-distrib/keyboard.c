@@ -9,6 +9,10 @@ void keyboard_init(void) {
 }
 
 void keyboard_handler(){
+      char input;
+
+      input = inb(KEYBOARD_PORT);
       send_eoi(1);
+      enable_irq(1);
       return;
 }

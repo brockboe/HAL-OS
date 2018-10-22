@@ -3,6 +3,7 @@
 #define _KEYBOARD_H
 
 #define KEYBOARD_IRQ_ON_MASTER 0x01
+#define KEYBOARD_PORT 0x60
 
 void keyboard_init(void);
 
