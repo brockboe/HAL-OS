@@ -14,7 +14,7 @@
 #include "keyboard.h"
 #include "paging.h"
 
-//define RUN_TESTS
+//#define RUN_TESTS
 //#define RUN_EXCEPTION_TESTS
 //#define PAGE_FAULT_TESTS
 
