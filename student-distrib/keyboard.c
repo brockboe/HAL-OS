@@ -7,7 +7,7 @@ unsigned char keymappings[128];
 
 void populate_keymappings();
 
-/* TODO: Implement keyboard initialization implementation */
+/* Initializes the keyboard and populates keymappings */
 void keyboard_init(void) {
     /* enable keyboard IRQ line on master PIC */
     enable_irq(KEYBOARD_IRQ_ON_MASTER);
@@ -17,6 +17,7 @@ void keyboard_init(void) {
     return;
 }
 
+/* Handles interrupt input when they keyboard generates an interrupt */
 void keyboard_interrupt_handler(){
       unsigned char key_pressed;
 
