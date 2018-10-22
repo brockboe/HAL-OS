@@ -5,7 +5,6 @@
 /*Mapping that matches the keyboard raw input to the char associated*/
 unsigned char keymappings[128];
 
-
 void populate_keymappings();
 
 /* TODO: Implement keyboard initialization implementation */
@@ -18,7 +17,7 @@ void keyboard_init(void) {
     return;
 }
 
-void keyboard_handler(){
+void keyboard_interrupt_handler(){
       unsigned char key_pressed;
 
       /*Get keyboard input*/
