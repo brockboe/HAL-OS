@@ -56,90 +56,133 @@ void RSOD(char * error){
 
 void int_zero_handler(void){
       RSOD("EXCEPTION 0: DIVIDE BY ZERO ERROR");
+      asm volatile("hlt");
 }
 
 void int_one_handler(void){
       RSOD("EXCEPTION 1: RESERVED - Intel Use only");
+      asm volatile("hlt");
+
 }
 
 void int_two_handler(void){
       RSOD("EXCEPTION 2: NMI - non-maskable interrupt occured");
+      asm volatile("hlt");
+
 }
 
 void int_three_handler(void){
       RSOD("EXCEPTION 3: BREAKPOINT  - INT 3 called");
+      asm volatile("hlt");
+
 }
 
 void int_four_handler(void){
       RSOD("EXCEPTION 4: OVERFLOW ERROR - INTO instruction called");
+      asm volatile("hlt");
+
 }
 
 void int_five_handler(void){
       RSOD("EXCEPTION 6: BOUND RANGE EXCEEDED - Check BOUND instructions");
+      asm volatile("hlt");
+
 }
 
 void int_six_handler(void){
       RSOD("EXCEPTION 6: INVALID OPCODE - Check assembly code");
+      asm volatile("hlt");
+
 }
 
 void int_seven_handler(void){
       RSOD("EXCEPTION 7: DEVICE NOT AVAILABLE");
+      asm volatile("hlt");
+
 }
 
 void int_eight_handler(void){
       RSOD("EXCEPTION 8: DOUBLE FAULT");
+      asm volatile("hlt");
+
 }
 
 void int_nine_handler(void){
       RSOD("EXCEPTION 9: COPROCESSOR SEGMENT OVERRUN");
+      asm volatile("hlt");
+
 }
 
 void int_ten_handler(void){
       RSOD("EXCEPTION 10: INVALID TSS");
+      asm volatile("hlt");
+
 }
 
 void int_eleven_handler(void){
       RSOD("EXCEPTION 11: SEGMENT NOT PRESENT");
+      asm volatile("hlt");
+
 }
 
 void int_twelve_handler(void){
       RSOD("EXCEPTION 12: STACK-SEGMENT FAULT");
+      asm volatile("hlt");
+
 }
 
 void int_thirteen_handler(void){
       RSOD("EXCEPTION 13: GENERAL PROTECTION FAULT");
+      asm volatile("hlt");
+
 }
 
 void int_fourteen_handler(void){
       RSOD("EXCEPTION 14: PAGE FAULT");
+      asm volatile("hlt");
+
 }
 
 void int_fifteen_handler(void){
       RSOD("EXCEPTION 15: assertion_failure() called");
+      asm volatile("hlt");
+
 }
 
 void int_sixteen_handler(void){
       RSOD("EXCEPTION 16: FPU FLOATING-POINT ERROR");
+      asm volatile("hlt");
+
 }
 
 void int_seventeen_handler(void){
       RSOD("EXCEPTION 17: ALIGNMENT CHECK");
+      asm volatile("hlt");
+
 }
 
 void int_eighteen_handler(void){
       RSOD("EXCEPTION 18: MACHINE CHECK");
+      asm volatile("hlt");
+
 }
 
 void int_nineteen_handler(void){
       RSOD("EXCEPTION 19: SIMD FLOATING-POINT EXCEPTION");
+      asm volatile("hlt");
+
 }
 
 void int_twenty_handler(void){
       RSOD("EXCEPTION 20: VIRTUALIZATION EXCEPTION");
+      asm volatile("hlt");
+
 }
 
 void int_thirty_handler(void){
       RSOD("EXCEPTION 30: SECURITY EXCEPTION");
+      asm volatile("hlt");
+
 }
 
 /*default_handler is installed for all handlers and does nothing when called but returns*/

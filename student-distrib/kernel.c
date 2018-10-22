@@ -12,6 +12,7 @@
 #include "int_setup.h"
 #include "rtc.h"
 #include "keyboard.h"
+#include "paging.h"
 
 #define RUN_TESTS
 
@@ -153,6 +154,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the keyboard */
     keyboard_init();
 
+    init_paging();
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -169,9 +172,7 @@ void entry(unsigned long magic, unsigned long addr) {
     launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-
-    while(1);
-
+    
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }
