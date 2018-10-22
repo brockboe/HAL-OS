@@ -7,3 +7,8 @@ void keyboard_init(void) {
     /* enable keyboard IRQ line on master PIC */
     enable_irq(KEYBOARD_IRQ_ON_MASTER);
 }
+
+void keyboard_handler(){
+      send_eoi(1);
+      return;
+}

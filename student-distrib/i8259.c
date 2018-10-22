@@ -47,8 +47,8 @@ void i8259_init(void) {
     outb(ICW_8086_MODE, SLAVE_8259_PORT+1);
 
     /* Restore all masks */
-    outb(slave_mask, SLAVE_8259_PORT + 1);
-	  outb(master_mask, MASTER_8259_PORT + 1);
+    outb(master_mask, SLAVE_8259_PORT + 1);
+	  outb(slave_mask, MASTER_8259_PORT + 1);
 
     enable_irq(SLAVE_IRQ_ON_MASTER);
 }
@@ -62,7 +62,7 @@ void enable_irq(uint32_t irq_num) {
     }
 
     /* if irq > 8, then we know we're working with slave PIC */
-    if(irq_num > 8)
+    if(irq_num >= 8)
     {
         /* Lower irqnum to traditional irq value range */
         irq_num -= 8;
@@ -95,7 +95,7 @@ void disable_irq(uint32_t irq_num) {
   }
 
   /* if irq > 8, then we know we're working with slave PIC */
-  if(irq_num > 8)
+  if(irq_num >= 8)
   {
       /* Lower irqnum to traditional irq value range */
       irq_num -= 8;

@@ -142,12 +142,6 @@ void int_thirty_handler(void){
       RSOD("EXCEPTION 30: SECURITY EXCEPTION");
 }
 
-void keyboard_handler(){
-      send_eoi(1);
-      enable_irq(1);
-      return;
-}
-
 /*default_handler is installed for all handlers and does nothing when called but returns*/
 
 void default_handler(void){

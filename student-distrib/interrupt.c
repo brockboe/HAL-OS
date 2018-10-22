@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "x86_desc.h"
 #include "int_handlers.h"
+#include "keyboard.h"
 
 /*Total number of Intel-Defined interrupts*/
 #define NUM_INTEL_INTERRUPTS 30
