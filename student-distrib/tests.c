@@ -1,6 +1,8 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "keyboard.h"
+#include "rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -34,7 +36,7 @@ int idt_test(){
 
 	int i;
 	int result = PASS;
-	for (i = 0; i < 10; ++i){
+	for (i = 0; i < 256; ++i){
 		if ((idt[i].offset_15_00 == NULL) &&
 			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
@@ -44,6 +46,33 @@ int idt_test(){
 
 	return result;
 }
+
+/*rtc_test simply waits for two RTC interrupts to occur
+*and then outputs success.
+*/
+int rtc_test(){
+	TEST_HEADER;
+	while(rtc_count < 2);
+	return PASS;
+}
+
+void exception_test(){
+	//int var1 = 0;
+	//int * var2;
+
+	//trigger a divide by zero exception
+	//var1 = 5 / 0;
+
+	//trigger a page fault
+	//var2 = 0;
+	//var1 = *var2;
+
+	//call interrupt 15
+	//assertion_failure();
+
+	return;
+}
+
 
 // add more tests here
 
@@ -57,4 +86,8 @@ int idt_test(){
 void launch_tests(){
 	TEST_OUTPUT("idt_test", idt_test());
 	// launch your tests here
+	TEST_OUTPUT("rtc_test", rtc_test());
+
+	exception_test();
+	return;
 }

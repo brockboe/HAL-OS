@@ -11,6 +11,8 @@
 #define BIT_6_MASK          0x40
 #define RTC_IRQ_ON_MASTER   0x08
 
+volatile unsigned int rtc_count = 0;
+
 /* Function to initialize the rtc */
 void rtc_init(void) {
     /* Declare local variables */
@@ -44,6 +46,8 @@ void rtc_interrupt_handler(void) {
   cli();
   /* send E0I on RTC line */
   send_eoi(RTC_IRQ_ON_MASTER);
+
+  rtc_count++;
 
   /* Make sure register C is not read again after IRQ8,
    * otherwise other interrupts will not occur.

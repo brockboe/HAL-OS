@@ -10,6 +10,8 @@
 #define BIT_6_MASK          0x40
 #define RTC_IRQ_ON_MASTER   0x08
 
+volatile unsigned int rtc_count;
+
 /* Function to initialize the rtc */
 void rtc_init(void);
 
