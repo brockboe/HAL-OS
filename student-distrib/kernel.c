@@ -154,6 +154,10 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the keyboard */
     keyboard_init();
 
+<<<<<<< HEAD
+=======
+    /* Init paging*/
+>>>>>>> ae24873bdc7fae55146ca64984fa2157def2ee4e
     init_paging();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
