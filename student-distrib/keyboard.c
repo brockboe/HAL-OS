@@ -17,7 +17,7 @@ void keyboard_init(void) {
     return;
 }
 
-void keyboard_interrup_handler(){
+void keyboard_interrupt_handler(){
       unsigned char key_pressed;
 
       /*Get keyboard input*/
