@@ -6,6 +6,8 @@
 
 #define PASS 1
 #define FAIL 0
+#define VIDMEM_ADDR		0xB8000
+#define KMEM_ADDR			0x400000
 
 /* format these macros as you see fit */
 #define TEST_HEADER 	\
@@ -52,27 +54,71 @@ int idt_test(){
 */
 int rtc_test(){
 	TEST_HEADER;
-	while(rtc_count < 2);
+	while(rtc_count < 20);
+
 	return PASS;
 }
 
-void exception_test(){
-	//int var1 = 0;
-	//int * var2;
+/*  paging_test  - for showing paging structure are populatd
+ *
+ *  check entries for Paging Directory and Paging table that are not NULL
+ *  Inputs : None
+ *  Output : PASS
+ *  Side Effects : None
+ *  Coverage : Initialize Paging, Enabling Paging, Paging defination
+ *  Files : paging.c/ paging.h
+*/
 
-	//trigger a divide by zero exception
-	//var1 = 5 / 0;
+int paging_test(){
+	TEST_HEADER;
 
-	//trigger a page fault
-	//var2 = 0;
-	//var1 = *var2;
+	int i;
+	int* j;
 
-	//call interrupt 15
-	//assertion_failure();
+	/* First set j to video memory start address */
+	j = (int*)(VIDMEM_ADDR);
+	i = *j;
+
+	/* Set j to kernel memory start address */
+	j = (int*)(KMEM_ADDR);
+	i = *j;
+
+	return PASS;
+}
+
+void exception_test() {
+	int var1 = 0;
+	int zero = 0;
+	int * var2;
+
+	/* trigger a divide by zero exception */
+	var1 = 5 / zero;
+
+	/* trigger a page fault */
+	var2 = 0;
+	var1 = *var2;
+
+	/* call interrupt 15 */
+	assertion_failure();
 
 	return;
 }
 
+void page_fault_test() {
+	TEST_HEADER;
+
+	int i;
+	int* j;
+
+	/* First set j to video memory start address */
+	j = (int*)(VIDMEM_ADDR - 1);
+	i = *j;
+
+	/* call interrupt 15 */
+	assertion_failure();
+
+	return;
+}
 
 // add more tests here
 
@@ -84,10 +130,24 @@ void exception_test(){
 
 /* Test suite entry point */
 void launch_tests(){
+	/* idt_test */
 	TEST_OUTPUT("idt_test", idt_test());
-	// launch your tests here
+	/* rtc_test */
 	TEST_OUTPUT("rtc_test", rtc_test());
+	/* paging_test */
+	TEST_OUTPUT("paging_test", paging_test());
 
-	exception_test();
 	return;
+}
+
+/* Exception test suite entry point */
+void launch_exception_tests(){
+	/* Function will give red screen of death */
+	exception_test();
+}
+
+/* Page fault test suite entry point */
+void launch_page_fault_tests(){
+	/* Function will give red screen of death */
+	page_fault_test();
 }

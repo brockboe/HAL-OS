@@ -14,7 +14,9 @@
 #include "keyboard.h"
 #include "paging.h"
 
-#define RUN_TESTS
+//define RUN_TESTS
+//#define RUN_EXCEPTION_TESTS
+//#define PAGE_FAULT_TESTS
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -155,7 +157,6 @@ void entry(unsigned long magic, unsigned long addr) {
     keyboard_init();
 
     /* Init paging*/
-    /* Init paging*/
     init_paging();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
@@ -172,6 +173,16 @@ void entry(unsigned long magic, unsigned long addr) {
 #ifdef RUN_TESTS
     /* Run tests */
     launch_tests();
+#endif
+
+#ifdef RUN_EXCEPTION_TESTS
+    /* Run test that will test exception handling */
+    launch_exception_tests();
+#endif
+
+#ifdef PAGE_FAULT_TESTS
+    /* Run test that will test page_faulting */
+    launch_page_fault_tests();
 #endif
     /* Execute the first program ("shell") ... */
 

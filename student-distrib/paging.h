@@ -49,17 +49,17 @@ typedef struct page_table_entry {
     union {
         uint32_t val;
         struct {
-            uint32_t present : 1; //if 1, exist. 0 - not exist 
-            uint32_t wr : 1; // 1 - enable write and read. 0 - read only 
-            uint32_t us : 1; // 1 - user mode, 0 - sudo mode 
-            uint32_t write_through : 1; // 1 - write through in cache is enabled. 0 - write back 
-            uint32_t cached : 1; // 1 - cached disabled, 0 - cached enabled 
-            uint32_t accessed : 1; //1 - accessed . 0 - not 
-            uint32_t dirty : 1; //1 - been accessed before . 0 - not 
-            uint32_t pat : 1; 
-            uint32_t global : 1; //1 - global enabled . 0 - not 
-            uint32_t available : 3; 
-            uint32_t physical_page_addr : 20; //physical memory address for this 4kB page 
+            uint32_t present : 1; //if 1, exist. 0 - not exist
+            uint32_t wr : 1; // 1 - enable write and read. 0 - read only
+            uint32_t us : 1; // 1 - user mode, 0 - sudo mode
+            uint32_t write_through : 1; // 1 - write through in cache is enabled. 0 - write back
+            uint32_t cached : 1; // 1 - cached disabled, 0 - cached enabled
+            uint32_t accessed : 1; //1 - accessed . 0 - not
+            uint32_t dirty : 1; //1 - been accessed before . 0 - not
+            uint32_t pat : 1;
+            uint32_t global : 1; //1 - global enabled . 0 - not
+            uint32_t available : 3;
+            uint32_t physical_page_addr : 20; //physical memory address for this 4kB page
         } __attribute__ ((packed));
     };
 } page_table_entry_t;
