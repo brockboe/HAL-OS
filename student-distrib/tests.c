@@ -49,8 +49,14 @@ int idt_test(){
 	return result;
 }
 
-/*rtc_test simply waits for two RTC interrupts to occur
-*and then outputs success.
+/*  rtc_test  - for showing paging structure are populatd
+ *
+ *  increment rtc_count to prove functionality and proper initialization
+ *  Inputs : None
+ *  Output : PASS
+ *  Side Effects : None
+ *  Coverage : proves rtc works
+ *  Files : rtc.c/ rtc.h
 */
 int rtc_test(){
 	TEST_HEADER;
@@ -86,6 +92,15 @@ int paging_test(){
 	return PASS;
 }
 
+/*  exception_test  - checks exceptions in IDT table
+ *
+ *  Will trigger two different exceptions to prove proper IDT init
+ *  Inputs : None
+ *  Output : FAIL
+ *  Side Effects : None
+ *  Coverage : proves IDT is properly initialized
+ *  Files : interrupt.c
+*/
 void exception_test() {
 	int var1 = 0;
 	int zero = 0;
@@ -104,6 +119,15 @@ void exception_test() {
 	return;
 }
 
+/*  page_fault_test  - showing page fault on invalid memory de-reference
+ *
+ *  de-reference an invalid memory address to show we page-fault properly
+ *  Inputs : None
+ *  Output : FAIL
+ *  Side Effects : None
+ *  Coverage : Initialize Paging, Enabling Paging, Paging defination
+ *  Files : paging.c/ paging.h
+*/
 void page_fault_test() {
 	TEST_HEADER;
 
