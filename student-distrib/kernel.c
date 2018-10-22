@@ -15,8 +15,8 @@
 #include "paging.h"
 
 //#define RUN_TESTS
-//#define RUN_EXCEPTION_TESTS
-//#define PAGE_FAULT_TESTS
+//#define RUN_EXCEPTION_TEST
+//#define PAGE_FAULT_TEST
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -175,14 +175,14 @@ void entry(unsigned long magic, unsigned long addr) {
     launch_tests();
 #endif
 
-#ifdef RUN_EXCEPTION_TESTS
+#ifdef RUN_EXCEPTION_TEST
     /* Run test that will test exception handling */
-    launch_exception_tests();
+    launch_divide_by_zero_test();
 #endif
 
-#ifdef PAGE_FAULT_TESTS
+#ifdef PAGE_FAULT_TEST
     /* Run test that will test page_faulting */
-    launch_page_fault_tests();
+    launch_page_fault_test();
 #endif
     /* Execute the first program ("shell") ... */
 

@@ -104,14 +104,9 @@ int paging_test(){
 void exception_test() {
 	int var1 = 0;
 	int zero = 0;
-	int * var2;
 
 	/* trigger a divide by zero exception */
 	var1 = 5 / zero;
-
-	/* trigger a page fault */
-	var2 = 0;
-	var1 = *var2;
 
 	/* call interrupt 15 */
 	assertion_failure();
@@ -165,13 +160,13 @@ void launch_tests(){
 }
 
 /* Exception test suite entry point */
-void launch_exception_tests(){
+void launch_divide_by_zero_test(){
 	/* Function will give red screen of death */
 	exception_test();
 }
 
 /* Page fault test suite entry point */
-void launch_page_fault_tests(){
+void launch_page_fault_test(){
 	/* Function will give red screen of death */
 	page_fault_test();
 }
