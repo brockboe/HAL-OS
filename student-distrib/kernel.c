@@ -154,14 +154,8 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the keyboard */
     keyboard_init();
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     /* Init paging*/
->>>>>>> ae24873bdc7fae55146ca64984fa2157def2ee4e
-=======
     /* Init paging*/
->>>>>>> checkpoint/interrupt-tests
     init_paging();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
@@ -180,7 +174,7 @@ void entry(unsigned long magic, unsigned long addr) {
     launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-    
+
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }

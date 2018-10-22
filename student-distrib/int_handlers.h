@@ -183,11 +183,8 @@ void int_thirty_handler(void){
       RSOD("EXCEPTION 30: SECURITY EXCEPTION");
       asm volatile("hlt");
 
-<<<<<<< Updated upstream
-=======
 }
 
->>>>>>> Stashed changes
 /*default_handler is installed for all handlers and does nothing when called but returns*/
 
 void default_handler(void){
