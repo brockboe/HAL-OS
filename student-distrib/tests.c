@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "keyboard.h"
 #include "rtc.h"
+#include "filesys.h"
 
 #define PASS 1
 #define FAIL 0
@@ -142,6 +143,22 @@ void page_fault_test() {
 // add more tests here
 
 /* Checkpoint 2 tests */
+
+int filesys_test(){
+	TEST_HEADER;
+	dentry_t * example_dentry;
+	uint8_t charbuffer[20];
+	if(read_dentry_by_name((uint8_t *)"frame0.txt", example_dentry)){
+		return FAIL;
+	}
+
+	if(read_data(example_dentry->inode_num, 0, charbuffer, 20)){
+		return FAIL;
+	}
+
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -155,6 +172,8 @@ void launch_tests(){
 	TEST_OUTPUT("rtc_test", rtc_test());
 	/* paging_test */
 	TEST_OUTPUT("paging_test", paging_test());
+
+	TEST_OUTPUT("filesys_test", filesys_test());
 
 	return;
 }
