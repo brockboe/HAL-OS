@@ -71,7 +71,7 @@ inode_t * dir_open(uint8_t * fname);
 
 uint32_t dir_write();
 
-uint32_t dir_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+uint32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes);
 
 uint32_t dir_close();
 

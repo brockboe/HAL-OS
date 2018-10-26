@@ -166,15 +166,18 @@ uint32_t dir_write(){
       return -1;
 }
 
-uint32_t dir_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
+uint32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes){
       int bits_copied = 0;
       int i;
-      dentry_t directory = filesys_begin->directory_entries[inode_index];
-      //copy the name into buffer
-      for(i = 0; i<nbytes || i<FILENAME_MAXLEN; i++){
-            buf[i] = directory.file_name[i];
+      int local_off = offset;
+      int total_dentries = filesys_begin->num_dir_entries;
+
+      for(i = 0; i<nbytes && (local_off/FNAME_MAX_LEN)<total_dentries; i++){
+            buf[i] = filesys_begin->directory_entries[(local_off/FNAME_MAX_LEN)].file_name[local_off % FNAME_MAX_LEN];
+            local_off++;
             bits_copied++;
       }
+
       return bits_copied;
 }
 

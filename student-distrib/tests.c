@@ -146,15 +146,14 @@ void page_fault_test() {
 
 int filesys_test(){
 	TEST_HEADER;
-	dentry_t * example_dentry;
-	uint8_t charbuffer[20];
-	if(read_dentry_by_name((uint8_t *)"frame0.txt", example_dentry)){
-		return FAIL;
-	}
+	dentry_t example_dentry;
+	uint8_t charbuffer[2000];
+	uint32_t temp;
+	temp = read_dentry_by_name((uint8_t *)"frame0.txt", &example_dentry);
 
-	if(read_data(example_dentry->inode_num, 0, charbuffer, 20)){
-		return FAIL;
-	}
+	temp = read_data(example_dentry.inode_num, 0, charbuffer, 1900);
+
+	temp = dir_read((uint32_t)0, charbuffer, (uint32_t)1500);
 
 	return PASS;
 }
