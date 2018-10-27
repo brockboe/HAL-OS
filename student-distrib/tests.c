@@ -4,6 +4,7 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "filesys.h"
+#include "syscall.h"
 
 #define PASS 1
 #define FAIL 0
@@ -149,11 +150,10 @@ int filesys_test(){
 	dentry_t example_dentry;
 	uint8_t charbuffer[2000];
 	uint32_t temp;
-	temp = read_dentry_by_name((uint8_t *)"frame0.txt", &example_dentry);
 
-	temp = read_data(example_dentry.inode_num, 0, charbuffer, 1900);
+	uint32_t fd = open((uint8_t *)".");
 
-	temp = dir_read((uint32_t)0, charbuffer, (uint32_t)1500);
+	temp = read(fd, charbuffer, 1500);
 
 	return PASS;
 }

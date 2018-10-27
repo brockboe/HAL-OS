@@ -37,8 +37,8 @@ typedef struct file_descriptor {
       union{
             uint32_t val[4];
             struct{
-                  uint32_t file_op_table_ptr;
-                  inode_t * inode;
+                  int32_t (*operations_pointer)(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+                  uint32_t inode;
                   uint32_t file_pos;
                   uint32_t flags;
             };
@@ -61,18 +61,22 @@ int32_t stringcompare(const uint8_t * a, const uint8_t * b, int cmplen);
 
 inode_t * file_open(uint8_t * fname);
 
-uint32_t file_write();
+int32_t file_write();
 
-uint32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+int32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
 
-uint32_t file_close();
+int32_t file_close();
 
 inode_t * dir_open(uint8_t * fname);
 
-uint32_t dir_write();
+int32_t dir_write();
 
-uint32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes);
+int32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes);
 
-uint32_t dir_close();
+int32_t dir_close();
+
+int32_t dir_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+
+int32_t file_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
 
 #endif

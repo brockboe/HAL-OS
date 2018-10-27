@@ -142,15 +142,15 @@ inode_t * file_open(uint8_t * fname){
       return inode_return;
 }
 
-uint32_t file_write(){
+int32_t file_write(){
       return -1;
 }
 
-uint32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
+int32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
       return read_data(inode_index, offset, buf, nbytes);
 }
 
-uint32_t file_close(){
+int32_t file_close(){
       return 0;
 }
 
@@ -162,11 +162,11 @@ inode_t * dir_open(uint8_t * fname){
       return inode_return;
 }
 
-uint32_t dir_write(){
+int32_t dir_write(){
       return -1;
 }
 
-uint32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes){
+int32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes){
       int bits_copied = 0;
       int i;
       int local_off = offset;
@@ -181,7 +181,35 @@ uint32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes){
       return bits_copied;
 }
 
-uint32_t dir_close(){
+int32_t dir_close(){
+      return 0;
+}
+
+int32_t file_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
+      switch(action){
+            case 0:
+                  //Read the file
+                  return file_read(inode_index, offset, buf, nbytes);
+            case 1:
+                  //Write file
+                  return file_write();
+            default:
+                  return -1;
+      }
+      return 0;
+}
+
+int32_t dir_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
+      switch(action){
+            case 0:
+                  //Read directory
+                  return dir_read(offset, buf, nbytes);
+            case 1:
+                  //Write Directory
+                  return dir_write();
+            default:
+                  return -1;
+      }
       return 0;
 }
 
