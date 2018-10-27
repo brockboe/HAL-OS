@@ -13,8 +13,9 @@
 #include "rtc.h"
 #include "keyboard.h"
 #include "paging.h"
+#include "filesys.h"
 
-//#define RUN_TESTS
+#define RUN_TESTS
 //#define RUN_EXCEPTION_TEST
 //#define PAGE_FAULT_TEST
 
@@ -63,6 +64,9 @@ void entry(unsigned long magic, unsigned long addr) {
             printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
             printf("First few bytes of module:\n");
+            
+            init_filesys((boot_block_t *)mod->mod_start);
+
             for (i = 0; i < 16; i++) {
                 printf("0x%x ", *((char*)(mod->mod_start+i)));
             }
