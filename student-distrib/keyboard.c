@@ -4,8 +4,12 @@
 
 /*Mapping that matches the keyboard raw input to the char associated*/
 unsigned char keymappings[128];
+unsigned char keymappings_lower[128];
+unsigned char keymappings_upper[128];
 
 void populate_keymappings();
+void populate_keymappings_lower();
+void populate_keymappings_upper();
 
 /* Initializes the keyboard and populates keymappings */
 void keyboard_init(void) {
@@ -79,3 +83,58 @@ void populate_keymappings(){
       keymappings[0x31] = 'n';
       keymappings[0x32] = 'm';
 }
+
+void populate_keymappings_upper(){
+     keymappings_upper[0x29] = '~';
+     keymappings_upper[0x02] = '!';
+     keymappings_upper[0x03] = '@';
+     keymappings_upper[0x04] = '#';
+     keymappings_upper[0x05] = '$';
+     keymappings_upper[0x06] = '%';
+     keymappings_upper[0x07] = '^';
+     keymappings_upper[0x08] = '&';
+     keymappings_upper[0x09] = '*';
+     keymappings_upper[0x0A] = '(';
+     keymappings_upper[0x0B] = ')';
+     keymappings_upper[0x0C] = '_';
+     keymappings_upper[0x0D] = '+';
+
+     keymappings_upper[0x10] = 'Q';
+     keymappings_upper[0x11] = 'W';
+     keymappings_upper[0x12] = 'E';
+     keymappings_upper[0x13] = 'R';
+     keymappings_upper[0x14] = 'T';
+     keymappings_upper[0x15] = 'Y';
+     keymappings_upper[0x16] = 'U';
+     keymappings_upper[0x17] = 'I';
+     keymappings_upper[0x18] = 'O';
+     keymappings_upper[0x19] = 'P';
+     keymappings_upper[0x1A] = '{';
+     keymappings_upper[0x1B] = '}';
+
+     keymappings_upper[0x1E] = 'A';
+     keymappings_upper[0x1F] = 'S';
+     keymappings_upper[0x20] = 'D';
+     keymappings_upper[0x21] = 'F';
+     keymappings_upper[0x22] = 'G';
+     keymappings_upper[0x23] = 'H';
+     keymappings_upper[0x24] = 'J';
+     keymappings_upper[0x25] = 'K';
+     keymappings_upper[0x26] = 'L';
+     keymappings_upper[0x27] = ':';
+     keymappings_upper[0x28] = '"';
+
+     keymappings_upper[0x2C] = 'Z';
+     keymappings_upper[0x2D] = 'X';
+     keymappings_upper[0x2E] = 'C';
+     keymappings_upper[0x2F] = 'V';
+     keymappings_upper[0x30] = 'B';
+     keymappings_upper[0x31] = 'N';
+     keymappings_upper[0x32] = 'M';
+     keymappings_upper[0x33] = '<';
+     keymappings_upper[0x34] = '>';
+     keymappings_upper[0x35] = '?';
+}
+}
+
+
