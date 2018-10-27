@@ -5,86 +5,47 @@
 #define BUFFER_SIZE 128
 #define VGA_WIDTH 80
 
-
-
-uint8_t curr_vc_id; /*id of the current vc */
-char vc_buffer[BUFFER_SIZE];
-
-
-struct flags {
-    unsigned int CLF;
-    unsigned int ALTF;
-    unsigned int SHIFTF;
-};
-
-typedef struct flags flags;
-
-struct vc_info {
-    flags vc_flags;
-    unsigned int buf_idx;
-    unsigned int x_pos;
-    unsigned int y_pos;
-};
-
-
-typedef struct vc_info vc_info;
-
-
-
+volatile char vc_buffer[BUFFER_SIZE];
 /*
  * init_vc
- * Description:
- * Input:
- * Output:
- * Side effects:
- * Return:
+ * Description: Initialize the virtual console to be used.
+ * Input: none
+ * Output: none
+ * Side effects: screen is cleared. a new virtual console is created is created.
+ * Return: none
  */
 
 void init_vc(void){
     cli();
-    clear();
+    clear();  /* FIXME change to our clear */
     update_cursor(0,0);
-    vc_info new_vc;
     int i;
-
-    // if(curr_vc_id < 8)
-    //     curr_vc_id++;
-
     for(i = 0; i < BUFFER_SIZE; i++){
       vc_buffer[i] = '\0';
     }
-    new_vc.buf_idx = 0;
-    new_vc.x_pos = 0;
-    new_vc.y_pos = 0;
-
-    new_vc.vc_flags.CLF = 0;
-    new_vc.vc_flags.ALTF = 0;
-    new_vc.vc_flags.SHIFTF = 0;
-
     sti();
-
 }
 /*
  * vc_open
- * Description:
- * Input:
- * Output:
- * Side effects:
- * Return:
+ * Description: Open the virtual console file
+ * Input: Garbage
+ * Output: None
+ * Side effects: clears screen
+ * Return: 0 on success
  */
-int32_t vc_open(uint32_t fd, void * buf, uint32_t bytes){
+int32_t vc_open(void * buf, uint32_t bytes){
   init_vc();
   return 0;
 }
 /*
  * vc_close
- * Description:
- * Input:
- * Output:
- * Side effects:
- * Return:
+ * Description: Close the virtual console
+ * Input: None
+ * Output: None
+ * Side effects: None
+ * Return: 0
  */
-int32_t vc_close(uint32_t fd, void * buf, uint32_t bytes){
+int32_t vc_close(void * buf, uint32_t bytes){
 
   // if(curr_vc_id == 0)
   //     return -1;
@@ -92,55 +53,53 @@ int32_t vc_close(uint32_t fd, void * buf, uint32_t bytes){
   // if(curr_vc_id != 0)
   //     vc_load(curr_vc_id);
   return 0;
-
 }
+
 /*
  * vc_write
- * Description:
- * Input:
- * Output:
- * Side effects:
- * Return:
+ * Description: Writes a given number of bytes from a buffer to the terminal
+ * Input: Pointer to the buffer and number of bytes to be written.
+ * Output: Written to virtual memory
+ * Side effects: Changes the screen cursor position and video memory.
+ * Return: -1 on failure, 0 on success
  */
 
-int32_t vc_write(uint32_t fd, void * buf, uint32_t bytes){
+int32_t vc_write(void * buf, uint32_t bytes){
   if(buf == NULL)
       return -1;
   int i;
   if (bytes > BUFFER_SIZE)
       bytes = BUFFER_SIZE; /* maximum nmber of bytes we can print to the screen */
-
   char * buffer = (char * )buf;
-
-
   cli();
-  for(i = 0; i < bytes; i++){
-      putc(buffer[i]);
-  }
-  sti();
 
+  for(i = 0; i < bytes; i++){
+      putc(buffer[i]); /* FIXME change to our print */
+  }
+
+  sti();
   return 0;
 }
 
 /*
  * vc_read
- * Description:
- * Input:
- * Output:
- * Side effects:
- * Return:
+ * Description: Copies the number of bytes specified to a specified buffer
+ * Input: Pointer to buffer to be modified. Number of bytes to be copied
+ * Output: Returns 0 on success. -1 on failure.
+ * Side effects: Buffer is cleared
+ * Return: 0 on success, -1 on failure
  */
 
-int32_t vc_read(uint32_t fd, void * buf, uint32_t bytes){
+int32_t vc_read(void * buf, uint32_t bytes){
 
     if(buf == NULL)
         return -1;
-
     int i;
     if(bytes > BUFFER_SIZE)
-        bytes = BUFFER_SIZE; /* maximum nmber of bytes we can read */
-
+        bytes = BUFFER_SIZE; /* maximum number of bytes we can read */
     char* buffer =  (char *)buf;
+
+    while(vc_buffer[0] == '\0');
 
     for(i = 0; i < bytes; i++){
         buffer[i] = vc_buffer[i];
@@ -148,15 +107,16 @@ int32_t vc_read(uint32_t fd, void * buf, uint32_t bytes){
 
     clr_buf();
     return 0;
-
 }
+
+
 /*
  * clr_buf
- * Description:
- * Input:
- * Output:
- * Side effects:
- * Return:
+ * Description: Helper function to clear the vc_buffer
+ * Input: none
+ * Output: none
+ * Side effects: vc_buffer emptied
+ * Return: none
  */
 
 void clr_buf(){
@@ -164,8 +124,6 @@ void clr_buf(){
     for(i = 0; i < BUFFER_SIZE; i++){
         vc_buffer[i] = '\0';
     }
-
-
 }
 
 
@@ -182,9 +140,21 @@ void clr_buf(){
 // }
 
 
+char * get_buffer(){
+  return vc_buffer;
+}
 
 
 /* REFERENCE: https://wiki.osdev.org/Text_Mode_Cursor */
+
+/*
+ * update_cursor
+ * Description: Updates position of cursor on the screen
+ * Input: takes in position on VGA, integer x and y
+ * Output: cursor location in VGA
+ * Side effects: overwrites current cursor location
+ * Return: none
+ */
 void update_cursor(int x, int y)
 {
 	uint16_t pos = y * VGA_WIDTH + x;

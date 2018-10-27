@@ -29,5 +29,4 @@ void update_cursor(int x, int y);
 
 
 
-
 #endif  /* _VC_H */
