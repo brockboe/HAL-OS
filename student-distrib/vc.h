@@ -21,11 +21,12 @@ int32_t vc_close(void * buf, uint32_t bytes);
 int32_t vc_read(void * buf, uint32_t bytes);
 int32_t vc_write(void * buf, uint32_t bytes);
 
+char * get_buffer();
 
 void clr_buf();
 void update_cursor(int x, int y);
 
-volatile char vc_buffer[BUFFER_SIZE];
+char vc_buffer[BUFFER_SIZE];
 
 
 #endif  /* _VC_H */

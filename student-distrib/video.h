@@ -21,3 +21,5 @@ void clear_term();
 void print_term(uint8_t * string, int length);
 
 void printchar_term(char a);
+
+void backspace();

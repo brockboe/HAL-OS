@@ -14,6 +14,7 @@
 #include "keyboard.h"
 #include "paging.h"
 #include "filesys.h"
+#include "video.h"
 
 #define RUN_TESTS
 //#define RUN_EXCEPTION_TEST
@@ -64,7 +65,7 @@ void entry(unsigned long magic, unsigned long addr) {
             printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
             printf("First few bytes of module:\n");
-            
+
             init_filesys((boot_block_t *)mod->mod_start);
 
             for (i = 0; i < 16; i++) {
@@ -162,6 +163,8 @@ void entry(unsigned long magic, unsigned long addr) {
 
     /* Init paging*/
     init_paging();
+
+    vid_init();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

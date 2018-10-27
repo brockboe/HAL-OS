@@ -1,36 +1,132 @@
 #include "keyboard.h"
 #include "i8259.h"
 #include "lib.h"
+#include "vc.h"
+#include "video.h"
+
+#define KEYBOARD 128
 
 /*Mapping that matches the keyboard raw input to the char associated*/
-unsigned char keymappings[128];
-unsigned char keymappings_lower[128];
-unsigned char keymappings_upper[128];
+unsigned char keymappings[KEYBOARD];
+unsigned char keymappings_upper[KEYBOARD];
 
 void populate_keymappings();
-void populate_keymappings_lower();
+void populate_keymappings_upper();
+
+static unsigned int ctrl_flag;
+static unsigned int shift_flag;
+static unsigned int cap_flag;
+
+static unsigned char tmpbuffer[KEYBOARD];
+static unsigned int next_available;
+
+#define ENTER  0x1C
+#define CTRL_L 0x1D
+#define CTRL_R 0x1D
+#define BACKSPACE 0x0E
+#define SHIFT_L 0x2A
+#define SHIFT_R 0x36
+#define CAPS_LOCK 0x3A
+
+#define U_S_L 0xAA
+#define U_S_R 0xB6
+#define U_C_L 0x9D
+#define U_C_R 0x9D
+
+#define L 0xA6
+
+void clear_tmp_buffer();
+void handle_keyinput(unsigned char key_pressed);
+void enter_pressed();
+void backspace_pressed();
 void populate_keymappings_upper();
 
 /* Initializes the keyboard and populates keymappings */
 void keyboard_init(void) {
+     cli();
+
+     ctrl_flag = 0;
+     shift_flag = 0;
+     cap_flag = 0;
+
+     next_available = 0;
+
     /* enable keyboard IRQ line on master PIC */
     enable_irq(KEYBOARD_IRQ_ON_MASTER);
 
+    //clear tmp buffer so that people can type
+    clear_tmp_buffer();
+    //clear flags
+    ctrl_flag = 0;
+    shift_flag = 0;
+    cap_flag = 0;
     /*Populate the keymappings table*/
     populate_keymappings();
+    populate_keymappings_upper();
+
+    sti();
     return;
 }
 
 /* Handles interrupt input when they keyboard generates an interrupt */
 void keyboard_interrupt_handler(){
       unsigned char key_pressed;
-
       /*Get keyboard input*/
       key_pressed = inb(KEYBOARD_PORT);
 
-      /*Ensure the byte isn't a key release and print it*/
-      if(key_pressed < 0x40){
-            printf("%c", keymappings[key_pressed]);
+      if(key_pressed == 0x0E){
+            key_pressed = inb(KEYBOARD_PORT);
+      }
+
+
+      switch(key_pressed){
+            case(ENTER): {
+                  enter_pressed();
+                  break;
+            }
+
+            //check for ctrl flag.
+            case(CTRL_L | CTRL_R):{
+                  ctrl_flag = 1;
+                  break;
+            }
+            case(U_C_L | U_C_R):{
+                  ctrl_flag = 0;
+                  break;
+            }
+
+            //check for shift flag.
+            case(SHIFT_L | SHIFT_R):{
+                  shift_flag = 1;
+                  break;
+            }
+            case(U_S_L | U_S_R):{
+                  shift_flag = 0;
+                  break;
+            }
+
+            //check for backspace
+            case(BACKSPACE):{
+                  backspace_pressed();
+                  break;
+            }
+
+            case(CAPS_LOCK):{
+                  /*when caps-lock pressed, set the caps-lock flag*/
+                  if(cap_flag == 1){
+                        cap_flag = 0;
+                  }
+                  else{
+                        cap_flag = 1;
+                  }
+                  break;
+            }
+
+            default :{
+                  handle_keyinput(key_pressed);
+                  break;
+            }
+
       }
 
       /*Return from interrupt*/
@@ -38,6 +134,78 @@ void keyboard_interrupt_handler(){
       enable_irq(1);
       return;
 }
+
+
+void clear_tmp_buffer(){
+    next_available = 0;
+}
+
+
+void handle_keyinput(unsigned char key_pressed){
+      /*check if it's ctrl + l to clear screen */
+      if((key_pressed == L) && ctrl_flag){
+            clear_term();
+            next_available = 0;
+            return;
+      }
+      /* otherwise, check if it's the upper case or lower case then to print to the screen */
+      char tmp_k;
+      if(shift_flag != cap_flag){
+            tmp_k = keymappings_upper[key_pressed];
+            printchar_term(tmp_k);
+      }
+      else{
+            tmp_k = keymappings[key_pressed];
+            printchar_term(tmp_k);
+      }
+
+      /* save it to the tmp buffer */
+      /* left the last one char in the buffer as '\n' */
+      if(next_available == KEYBOARD-1){
+            return;
+      }
+      else{
+            tmpbuffer[next_available] = tmp_k;
+            next_available ++;
+            return;
+      }
+      return;
+}
+
+void enter_pressed(){
+      /*add the newline at the end of the buffer */
+      tmpbuffer[next_available] = '\n';
+      next_available ++;
+
+      /*copy the keyboard buffer to the official buffer */
+      char* official = get_buffer();
+      if(official == NULL){
+            return;
+      }
+      /*deep copy everything from the keyboard buffer to the official terminal buffer */
+      unsigned int i = 0;
+      for(i = 0; i < next_available; i++){
+            official[i] = tmpbuffer[i];
+      }
+      /*clear the keyboard buffer */
+      next_available = 0;
+      return;
+}
+
+void backspace_pressed(){
+      /*if nothing is in the keyboard buffer, only call delete video buffer */
+      if(next_available == 0){
+            backspace();
+            return;
+      }
+      /*if there are things in the keyboard buffer, delete it and call the video buffer */
+      else{
+            next_available --;
+            backspace();
+            return;
+      }
+}
+
 
 /*Fills the table with the values associated with keyboard input*/
 void populate_keymappings(){
@@ -135,6 +303,3 @@ void populate_keymappings_upper(){
      keymappings_upper[0x34] = '>';
      keymappings_upper[0x35] = '?';
 }
-}
-
-

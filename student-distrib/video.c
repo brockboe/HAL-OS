@@ -31,6 +31,10 @@ void scroll_term(){
             display[i - TERMWIDTH].character = display[i].character;
       }
       tinfo.offset = TERMWIDTH * (TERMHEIGHT - 1);
+
+      for(i = TERMWIDTH * (TERMHEIGHT - 1); i < MAXCHAR; i++){
+            display[i].character = 0;
+      }
 }
 
 void print_term(uint8_t * string, int length){
@@ -54,6 +58,11 @@ void print_term(uint8_t * string, int length){
 }
 
 void printchar_term(char a){
+
+      if(a == '\0'){
+            return;
+      }
+
       if(tinfo.offset >= MAXCHAR){
             scroll_term();
       }
@@ -63,10 +72,14 @@ void printchar_term(char a){
       }
       display[tinfo.offset].character = a;
       tinfo.offset++;
+      return;
 }
 
 void backspace(){
       tinfo.offset--;
+      if(tinfo.offset > MAXCHAR){
+            tinfo.offset = 0;
+      }
       display[tinfo.offset].character = 0;
       return;
 }
