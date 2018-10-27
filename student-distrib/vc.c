@@ -2,10 +2,6 @@
 #include "lib.h"
 #include "keyboard.h"
 
-#define BUFFER_SIZE 128
-#define VGA_WIDTH 80
-
-volatile char vc_buffer[BUFFER_SIZE];
 /*
  * init_vc
  * Description: Initialize the virtual console to be used.
@@ -108,7 +104,6 @@ int32_t vc_read(void * buf, uint32_t bytes){
     clr_buf();
     return 0;
 }
-
 
 /*
  * clr_buf
