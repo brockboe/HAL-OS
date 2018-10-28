@@ -49,6 +49,15 @@ typedef struct data_block {
       uint8_t data[4096];
 } data_block_t;
 
+/*Points to the very beginning of the filesystem*/
+boot_block_t * filesys_begin;
+/*Points to the beginning of the inodes in the filesystem*/
+inode_t * inodes_begin;
+/*Points to the beginning of the data blocks in the filesystem*/
+data_block_t * data_block_begin;
+/*The number of inodes within the file system*/
+uint32_t num_inodes;
+
 void init_filesys(boot_block_t * bb);
 
 int32_t read_dentry_by_name(const uint8_t * fname, dentry_t * dentry);

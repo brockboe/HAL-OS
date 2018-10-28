@@ -39,7 +39,7 @@ int32_t write(int32_t fd, const void * buf, int32_t n_bytes){
              case 1:
                   return vc_write((uint8_t *)buf, n_bytes);
              default:
-                  return (test_pcb.fd[fd].operations_pointer)(1, 0, 0, 0, 0);
+                  return (test_pcb.fd[fd].operations_pointer)(1, 0, 0, (uint8_t *)buf, n_bytes);
        }
 }
 
@@ -63,15 +63,15 @@ int32_t open(const uint8_t * filename){
              case 0:
                   //RTC
                   (test_pcb.fd[2].operations_pointer) = rtc_io;
-                  return 0;
+                  return 2;
              case 1:
                   //Directory
                   (test_pcb.fd[2].operations_pointer) = dir_io;
-                  break;
+                  return 2;
              case 2:
                   //Regular File
                   (test_pcb.fd[2].operations_pointer) = file_io;
-                  break;
+                  return 2;
              default:
                   return -2;
        }

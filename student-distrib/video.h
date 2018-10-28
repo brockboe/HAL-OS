@@ -23,3 +23,9 @@ void print_term(uint8_t * string, int length);
 void printchar_term(char a);
 
 void backspace();
+
+void set_term_x(uint32_t x);
+
+void print_num(int x);
+
+void fill_color();

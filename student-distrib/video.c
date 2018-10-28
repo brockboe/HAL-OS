@@ -1,6 +1,8 @@
 #include "video.h"
 #include "lib.h"
 
+#define CYAN 0xB
+
 vid_data_t * display;
 terminal_info_t tinfo;
 
@@ -8,11 +10,18 @@ void vid_init(){
       int i;
       display = (vid_data_t *)VIDMEM;
       tinfo.offset = 0;
-
       for(i = 0; i < MAXCHAR; i++){
-            display[i].highbits = 7;
+            display[i].highbits = CYAN;
       }
 
+      return;
+}
+
+void fill_color(){
+      int i;
+      for(i = 0; i < MAXCHAR; i++){
+            display[i].highbits = CYAN;
+      }
       return;
 }
 
@@ -88,5 +97,43 @@ void backspace(){
 
 void tab(){
       tinfo.offset = (tinfo.offset / 10) + 10;
+      if(tinfo.offset > MAXCHAR){
+            scroll_term();
+      }
+      return;
+}
+
+void set_term_x(uint32_t x){
+      if(x > TERMWIDTH){
+            return;
+      }
+      tinfo.offset -= tinfo.offset % TERMWIDTH;
+      tinfo.offset += x;
+      return;
+}
+
+void print_num(int x){
+      char num_ascii[100];
+      int count = -1;
+      int low_place;
+      int remaining = x;
+
+      if(x == 0){
+            printchar_term('0');
+            return;
+      }
+
+      while(remaining > 0){
+            count++;
+            low_place = remaining % 10;
+            remaining /= 10;
+            num_ascii[count] = (char)(low_place + '0');
+      }
+
+      while(count >= 0){
+            printchar_term(num_ascii[count]);
+            count--;
+      }
+
       return;
 }

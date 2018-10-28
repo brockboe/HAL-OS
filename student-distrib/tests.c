@@ -147,18 +147,115 @@ void page_fault_test() {
 
 /* Checkpoint 2 tests */
 
-int filesys_test(){
+void list_files(){
+	int32_t temp;
+	int32_t fd;
+	uint8_t fname[32];
+	dentry_t file_dentry;
+	inode_t * file_inode;
+	int file_count;
+	int i;
 
-	char charbuffer[127];
-	uint32_t temp;
+	clear_term();
 
-	while(1){
-		temp = read(0, charbuffer, 127);
+	file_count = (int)filesys_begin->num_dir_entries;
+	fd = open((uint8_t *)".");
 
-		print_term((uint8_t*)charbuffer, 127);
+	for(i = 0; i < file_count; i++){
+		set_term_x(1);
+		temp = read(fd, fname, FNAME_MAX_LEN);
+		temp = write(1, fname, FNAME_MAX_LEN);
+		temp = read_dentry_by_name(fname, &file_dentry);
 
-		print_term((uint8_t*)"Got Here", 8);
+		file_inode = (inode_t *)(filesys_begin->directory_entries[i].inode_num + inodes_begin);
+
+		set_term_x(40);
+		print_term((uint8_t *)"filetype: ", 10);
+		print_num((int)file_dentry.file_type);
+		set_term_x(60);
+		print_term((uint8_t *)"size: ", 6);
+		print_num((int)file_inode->length);
+		printchar_term('\n');
 	}
+
+}
+
+void print_file(uint8_t * fname){
+	int temp;
+	int32_t fd;
+	int i;
+
+	uint8_t charbuffer[1000];
+
+	for(i = 0; i < 1000; i++){
+		charbuffer[i] = 0;
+	}
+
+	clear_term();
+
+	fd = open(fname);
+	temp = read(fd, charbuffer, 1000);
+	temp = write(1, charbuffer, 1000);
+}
+
+void RTC_IO(){
+	int32_t fd;
+	int32_t temp;
+	int i;
+	uint32_t buf[4];
+
+	fd = open((uint8_t *)"rtc");
+
+	clear_term();
+	*buf = 32;
+	temp = write(fd, buf, 4);
+	for(i = 0; i < MAXCHAR; i++){
+		printchar_term('.');
+		temp = read(fd, NULL, 0);
+	}
+
+	clear_term();
+	*buf = 64;
+	temp = write(fd, buf, 4);
+	for(i = 0; i < MAXCHAR; i++){
+		printchar_term('.');
+		temp = read(fd, NULL, 0);
+	}
+
+	clear_term();
+	*buf = 128;
+	temp = write(fd, buf, 4);
+	for(i = 0; i < MAXCHAR; i++){
+		printchar_term('.');
+		temp = read(fd, NULL, 0);
+	}
+
+	return;
+}
+
+int filesys_test(){
+	fill_color();
+
+	int retval;
+	uint8_t temp[10];
+
+	list_files();
+
+	retval = read(0, (void *)temp, 1);
+
+	print_file((uint8_t *)"frame0.txt");
+
+	retval = read(0, (void *)temp, 1);
+
+	print_file((uint8_t *)"verylargetextwithverylongname.tx");
+
+	retval = read(0, (void *)temp, 1);
+
+	print_file((uint8_t *)"sigtest");
+
+	retval = read(0, (void *)temp, 1);
+
+	RTC_IO();
 
 	return PASS;
 }
@@ -172,12 +269,10 @@ int filesys_test(){
 void launch_tests(){
 	/* idt_test */
 	TEST_OUTPUT("idt_test", idt_test());
-	/* rtc_test */
-	TEST_OUTPUT("rtc_test", rtc_test());
 	/* paging_test */
 	TEST_OUTPUT("paging_test", paging_test());
 
-	TEST_OUTPUT("filesys_test", filesys_test());
+	filesys_test();
 
 	return;
 }

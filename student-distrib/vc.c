@@ -64,12 +64,9 @@ int32_t vc_close(void * buf, uint32_t bytes){
 int32_t vc_write(void * buf, uint32_t bytes){
   if(buf == NULL)
       return -1;
-  if (bytes > BUFFER_SIZE)
-      bytes = BUFFER_SIZE; /* maximum nmber of bytes we can print to the screen */
-  char * buffer = (char * )buf;
   cli();
 
-  print_term((uint8_t *)buffer, bytes);
+  print_term((uint8_t *)buf, bytes);
 
   sti();
   return 0;

@@ -6,14 +6,7 @@ int32_t stringcompare(const uint8_t * a, const uint8_t * b, int cmplen);
 int32_t stringlength(const uint8_t * string);
 void fnamecopy(const uint8_t * source, uint8_t * dest);
 
-/*Points to the very beginning of the filesystem*/
-boot_block_t * filesys_begin;
-/*Points to the beginning of the inodes in the filesystem*/
-inode_t * inodes_begin;
-/*Points to the beginning of the data blocks in the filesystem*/
-data_block_t * data_block_begin;
-/*The number of inodes within the file system*/
-uint32_t num_inodes;
+
 
 /* init_filesys
  * This function is called in kernel.c and sets up the necessary

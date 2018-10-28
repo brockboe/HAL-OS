@@ -159,6 +159,12 @@ void handle_keyinput(unsigned char key_pressed){
             next_available = 0;
             return;
       }
+
+      if(key_pressed > 0x81){
+            return;
+      }
+
+
       /* otherwise, check if it's the upper case or lower case then to print to the screen */
       char tmp_k;
       if(shift_flag != cap_flag){
