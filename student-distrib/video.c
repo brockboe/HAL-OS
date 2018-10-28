@@ -8,6 +8,7 @@ vid_data_t * display;
 terminal_info_t tinfo;
 
 /* video_initialization 
+ * DESCRIPTION : initialze the terminal display to cyan as default 
  * INPUT : none 
  * OUTPUT :none 
  * EFFECT : initialze the terminal display to cyan as default 
@@ -25,6 +26,7 @@ void vid_init(){
 }
 
 /* fill_color 
+ * DESCRIPTION : fill the terminal with desired color (RED in our case )
  * INPUT : none 
  * OUTPUT : none 
  * EFFECT : fill the terminal by color red after first initialilzation 
@@ -40,6 +42,7 @@ void fill_color(){
 }
 
 /* clear_term 
+ * DESCRIPTION : clear up the terminal's charactes 
  * INPUT : none 
  * OUTPUT : none 
  * EFFECT :called with ctrl+l is hit, wipe the terminal's characters 
@@ -60,6 +63,7 @@ void clear_term(){
  * INPUT : none 
  * OUTPUT : none 
  * EFFECT : shift the display screen up with one empty line at the bottom 
+ *          move the cursor to the correct place 
  * RETURN :none 
  */
 void scroll_term(){
@@ -81,6 +85,7 @@ void scroll_term(){
  * OUTPUT : none 
  * EFFECT : display the characters on the terminal by modifying the display screen 
  *          check for if needed to scroll if the terminal display is fully written 
+ *          move the cursor to its correct position 
  * RETURN : none 
  */
 void print_term(uint8_t * string, int length){
@@ -109,6 +114,7 @@ void print_term(uint8_t * string, int length){
  * OUTPUT : none 
  * EFFECT : display the character just typed in by the user 
  *          check for if needed to scroll if the terminal is fully written 
+ *          update cursor's position 
  * RETURN : none 
  */
 void printchar_term(char a){
@@ -135,7 +141,8 @@ void printchar_term(char a){
  * DESCRIPTION : called when user hit 'BACKSPACE' to delete a character 
  * INPUT : none 
  * OUTPUT : none 
- * EFFECT : move cursor backward one position , wipe out the last character displated on the terminal 
+ * EFFECT : move cursor backward one position 
+ *          wipe out the last character displated on the terminal 
  * RETURN : none 
  */
 void backspace(){
