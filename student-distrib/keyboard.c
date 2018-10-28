@@ -74,7 +74,7 @@ void keyboard_interrupt_handler(){
       /*Get keyboard input*/
       key_pressed = inb(KEYBOARD_PORT);
 
-      if(key_pressed == 0x0E){
+      if(key_pressed == 0xE0){
             key_pressed = inb(KEYBOARD_PORT);
       }
 
@@ -96,11 +96,22 @@ void keyboard_interrupt_handler(){
             }
 
             //check for shift flag.
-            case(SHIFT_L | SHIFT_R):{
+            case SHIFT_L:{
                   shift_flag = 1;
                   break;
             }
-            case(U_S_L | U_S_R):{
+
+            case SHIFT_R:{
+                  shift_flag = 1;
+                  break;
+            }
+
+            case U_S_L:{
+                  shift_flag = 0;
+                  break;
+            }
+
+            case U_S_R:{
                   shift_flag = 0;
                   break;
             }
@@ -241,7 +252,7 @@ void populate_keymappings(){
       keymappings[0x25] = 'k';
       keymappings[0x26] = 'l';
 
-      keymappings[0x2A] = '\n';
+      keymappings[0x1C] = '\n';
 
       keymappings[0x2C] = 'z';
       keymappings[0x2D] = 'x';
@@ -291,6 +302,8 @@ void populate_keymappings_upper(){
      keymappings_upper[0x26] = 'L';
      keymappings_upper[0x27] = ':';
      keymappings_upper[0x28] = '"';
+
+     keymappings[0x1C] = '\n';
 
      keymappings_upper[0x2C] = 'Z';
      keymappings_upper[0x2D] = 'X';
