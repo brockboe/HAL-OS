@@ -155,7 +155,9 @@ int filesys_test(){
 	while(1){
 		temp = read(0, charbuffer, 127);
 
-		print_term(charbuffer, 127);
+		print_term((uint8_t*)charbuffer, 127);
+
+		print_term((uint8_t*)"Got Here", 8);
 	}
 
 	return PASS;

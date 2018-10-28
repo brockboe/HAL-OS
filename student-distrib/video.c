@@ -70,9 +70,11 @@ void printchar_term(char a){
             tinfo.offset -= tinfo.offset % TERMWIDTH;
             tinfo.offset += TERMWIDTH;
       }
-      display[tinfo.offset].character = a;
-      tinfo.offset++;
-      return;
+      else{
+            display[tinfo.offset].character = a;
+            tinfo.offset++;
+            return;
+      }
 }
 
 void backspace(){

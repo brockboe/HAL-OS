@@ -172,7 +172,7 @@ void handle_keyinput(unsigned char key_pressed){
 
       /* save it to the tmp buffer */
       /* left the last one char in the buffer as '\n' */
-      if(next_available == KEYBOARD-1){
+      if(next_available == BUFFER_SIZE-1){
             return;
       }
       else{
