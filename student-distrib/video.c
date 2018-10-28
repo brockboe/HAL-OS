@@ -2,6 +2,7 @@
 #include "lib.h"
 
 #define CYAN 0xB
+#define RED 0xC
 
 vid_data_t * display;
 terminal_info_t tinfo;
@@ -20,7 +21,7 @@ void vid_init(){
 void fill_color(){
       int i;
       for(i = 0; i < MAXCHAR; i++){
-            display[i].highbits = CYAN;
+            display[i].highbits = RED;
       }
       return;
 }

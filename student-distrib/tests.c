@@ -198,6 +198,25 @@ void print_file(uint8_t * fname){
 	temp = write(1, charbuffer, 1000);
 }
 
+void print_file_by_index(uint32_t findex){
+	int32_t temp;
+	uint8_t charbuffer[1000];
+	dentry_t dentry;
+	int i;
+
+	for(i = 0; i < 1000; i++){
+		charbuffer[i] = 0;
+	}
+
+	clear_term();
+
+	temp = read_dentry_by_index(findex, &dentry);
+	temp = read_data(dentry.inode_num, 0, charbuffer, 1000);
+	temp = write(1, charbuffer, 1000);
+
+	return;
+}
+
 void RTC_IO(){
 	int32_t fd;
 	int32_t temp;
@@ -209,7 +228,7 @@ void RTC_IO(){
 	clear_term();
 	*buf = 32;
 	temp = write(fd, buf, 4);
-	for(i = 0; i < MAXCHAR; i++){
+	for(i = 0; i < MAXCHAR/4; i++){
 		printchar_term('.');
 		temp = read(fd, NULL, 0);
 	}
@@ -217,7 +236,7 @@ void RTC_IO(){
 	clear_term();
 	*buf = 64;
 	temp = write(fd, buf, 4);
-	for(i = 0; i < MAXCHAR; i++){
+	for(i = 0; i < MAXCHAR/4; i++){
 		printchar_term('.');
 		temp = read(fd, NULL, 0);
 	}
@@ -225,11 +244,24 @@ void RTC_IO(){
 	clear_term();
 	*buf = 128;
 	temp = write(fd, buf, 4);
-	for(i = 0; i < MAXCHAR; i++){
+	for(i = 0; i < MAXCHAR/4; i++){
 		printchar_term('.');
 		temp = read(fd, NULL, 0);
 	}
 
+	return;
+}
+
+void free_typing(){
+	uint8_t charbuffer[128];
+	uint32_t retval;
+
+	clear_term();
+
+	while(1){
+		retval = read(0, charbuffer, 128);
+		retval = write(1, charbuffer, 128);
+	}
 	return;
 }
 
@@ -256,6 +288,18 @@ int filesys_test(){
 	retval = read(0, (void *)temp, 1);
 
 	RTC_IO();
+
+	retval = read(0, (void *)temp, 1);
+
+	print_file_by_index(10);
+
+	retval = read(0, (void *)temp, 1);
+
+	print_file_by_index(11);
+
+	retval = read(0, (void *)temp, 1);
+
+	free_typing();
 
 	return PASS;
 }
