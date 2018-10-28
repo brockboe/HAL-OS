@@ -219,8 +219,6 @@ void backspace_pressed(){
       }
 }
 
-
-/*Fills the table with the values associated with keyboard input*/
 void populate_keymappings(){
       keymappings[0x02] = '1';
       keymappings[0x03] = '2';
@@ -232,6 +230,10 @@ void populate_keymappings(){
       keymappings[0x09] = '8';
       keymappings[0x0A] = '9';
       keymappings[0x0B] = '0';
+      keymappings[0x0C] = '-';
+      keymappings[0x0D] = '=';
+
+
 
       keymappings[0x10] = 'q';
       keymappings[0x11] = 'w';
@@ -243,6 +245,10 @@ void populate_keymappings(){
       keymappings[0x17] = 'i';
       keymappings[0x18] = 'o';
       keymappings[0x19] = 'p';
+      keymappings[0x1A] = '[';
+      keymappings[0x1B] = ']';
+
+
 
       keymappings[0x1E] = 'a';
       keymappings[0x1F] = 's';
@@ -253,9 +259,15 @@ void populate_keymappings(){
       keymappings[0x24] = 'j';
       keymappings[0x25] = 'k';
       keymappings[0x26] = 'l';
+      keymappings[0x27] = ';';
+      keymappings[0x28] = '\'';
+      keymappings[0x29] = '`';
+
+
 
       keymappings[0x1C] = '\n';
 
+      keymappings[0x2B] = '\\';
       keymappings[0x2C] = 'z';
       keymappings[0x2D] = 'x';
       keymappings[0x2E] = 'c';
@@ -263,6 +275,11 @@ void populate_keymappings(){
       keymappings[0x30] = 'b';
       keymappings[0x31] = 'n';
       keymappings[0x32] = 'm';
+      keymappings[0x33] = ',';
+      keymappings[0x34] = '.';
+      keymappings[0x35] = '/';
+      keymappings[0x39] = ' ';
+
 }
 
 void populate_keymappings_upper(){
@@ -305,7 +322,9 @@ void populate_keymappings_upper(){
      keymappings_upper[0x27] = ':';
      keymappings_upper[0x28] = '"';
 
-     keymappings_upper[0x1C] = '\n';
+     keymappings[0x1C] = '\n';
+
+     keymappings_upper[0x2B] = '|';
 
      keymappings_upper[0x2C] = 'Z';
      keymappings_upper[0x2D] = 'X';
@@ -317,4 +336,5 @@ void populate_keymappings_upper(){
      keymappings_upper[0x33] = '<';
      keymappings_upper[0x34] = '>';
      keymappings_upper[0x35] = '?';
+     keymappings_upper[0x39] = ' ';
 }
