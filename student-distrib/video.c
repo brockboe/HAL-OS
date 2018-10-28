@@ -83,3 +83,8 @@ void backspace(){
       display[tinfo.offset].character = 0;
       return;
 }
+
+void tab(){
+      tinfo.offset = (tinfo.offset / 10) + 10;
+      return;
+}

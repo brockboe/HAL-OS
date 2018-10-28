@@ -180,3 +180,15 @@ int32_t rtc_read() {
 int32_t rtc_close() {
     return 0;
 }
+
+int32_t rtc_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
+      switch(action){
+            case 0:
+                  return rtc_read();
+            case 1:
+                  return rtc_write(buf, nbytes);
+            default:
+                  return 1;
+      }
+      return 1;
+}

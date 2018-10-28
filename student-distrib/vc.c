@@ -1,6 +1,7 @@
 #include "vc.h"
 #include "lib.h"
 #include "keyboard.h"
+#include "video.h"
 
 /*
  * init_vc
@@ -69,9 +70,7 @@ int32_t vc_write(void * buf, uint32_t bytes){
   char * buffer = (char * )buf;
   cli();
 
-  for(i = 0; i < bytes; i++){
-      putc(buffer[i]); /* FIXME change to our print */
-  }
+  print_term((uint32_t *)buffer, bytes);
 
   sti();
   return 0;

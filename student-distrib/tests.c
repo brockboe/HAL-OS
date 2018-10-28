@@ -6,6 +6,7 @@
 #include "filesys.h"
 #include "syscall.h"
 #include "vc.h"
+#include "video.h"
 
 #define PASS 1
 #define FAIL 0
@@ -147,14 +148,15 @@ void page_fault_test() {
 /* Checkpoint 2 tests */
 
 int filesys_test(){
-	TEST_HEADER;
-	dentry_t example_dentry;
-	uint8_t charbuffer[2000];
+
+	char charbuffer[127];
 	uint32_t temp;
 
-	uint32_t fd = open((uint8_t *)".");
+	while(1){
+		temp = read(0, charbuffer, 127);
 
-	temp = read(fd, charbuffer, 1500);
+		print_term(charbuffer, 127);
+	}
 
 	return PASS;
 }
