@@ -58,3 +58,116 @@ void rtc_interrupt_handler(void) {
   /* Re-enable interrupts */
   sti();
 }
+
+/* Function that opens the RTC */
+int32_t rtc_open() {
+    /* if rtc hasn't been initialized, we want to initialize it */
+    if(!rtc_init_check)
+    {
+        rtc_init();
+    }
+    /* Set frequency of RTC to 2 */
+    char two_hertz = HERTZ_2;
+
+    /* Save reg A value */
+    outb(REGISTER_A, REG_NUM_PORT);
+
+    /* Set frequency to 2Hz */
+    two_hertz = two_hertz | (FREQ_MASK & inb(REG_CMOS));
+    outb(two_hertz, REG_CMOS);
+
+    return 0;
+}
+
+/* Function that writes to the RTC */
+int32_t rtc_write(const void * buf, int32_t nbytes) {
+    /* Variabl that will hold desired frequency from buf */
+    uint32_t frequency;
+    uint32_t rate;
+
+    /* If nbytes is 4 (which it has to be), and the buf isn't empty,
+     * We can set the frequency to the new desired value
+     */
+    if(nbytes == 4 && (uint32_t)buf != NULL)
+    {   /* Extract desired frequency from buf */
+        frequency = *(uint32_t*)(buf);
+
+        /* Set appropriate based on frequency, we use
+         * a switch statement to find proper rate
+         */
+        switch(frequency) {
+            case 128:
+                rate = 0x09;
+                break;
+
+            case 64:
+                rate = 0x0A;
+                break;
+
+            case 32:
+                rate = 0x0B;
+                break;
+
+            case 16:
+                rate = 0x0C;
+                break;
+
+            case 8:
+                rate = 0x0D;
+                break;
+
+            case 4:
+                rate = 0x0E;
+                break;
+
+            case 2:
+                rate = 0x0F;
+                break;
+
+            default:
+                return -EINVAL;
+        }
+
+        /* Write new refresh rate to proper port */
+        rate = rate | (FREQ_MASK & inb(REG_CMOS));
+        /* Save reg A value */
+        outb(REGISTER_A, REG_NUM_PORT);
+        outb(rate, REG_CMOS);
+    }
+
+    else
+    {
+        /* Return -1 to indicate write failed */
+        return -EINVAL;
+    }
+
+    return nbytes;
+}
+
+/* Function that reads the RTC */
+int32_t rtc_read() {
+    /* Spin while we wait for interrupts to get disabled */
+    while(!rtc_interrupt_flag) {}
+
+    /* When interrupt is completed, set to 0 */
+    rtc_interrupt_flag = 0;
+
+    return 0;
+}
+
+/* Function that closes the RTC */
+int32_t rtc_close() {
+    return 0;
+}
+
+int32_t rtc_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
+      switch(action){
+            case 0:
+                  return rtc_read();
+            case 1:
+                  return rtc_write(buf, nbytes);
+            default:
+                  return 1;
+      }
+      return 1;
+}

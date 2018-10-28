@@ -18,4 +18,18 @@ void rtc_init(void);
 /* Function that handles rtc-generated interrupts */
 void rtc_interrupt_handler(void);
 
+/* Function that opens the RTC */
+int32_t rtc_open();
+
+/* Function that writes to the RTC */
+int32_t rtc_write(const void * buf, int32_t nbytes);
+
+/* Function that reads the RTC */
+int32_t rtc_read();
+
+/* Function that closes the RTC */
+int32_t rtc_close();
+
+int32_t rtc_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+
 #endif  /* _RTC_H */

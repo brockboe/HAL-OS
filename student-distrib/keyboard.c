@@ -4,7 +4,7 @@
 #include "vc.h"
 #include "video.h"
 
-#define KEYBOARD 128
+#define KEYBOARD 256
 
 /*Mapping that matches the keyboard raw input to the char associated*/
 unsigned char keymappings[KEYBOARD];
@@ -177,6 +177,8 @@ void enter_pressed(){
       tmpbuffer[next_available] = '\n';
       next_available ++;
 
+      printchar_term('\n');
+
       /*copy the keyboard buffer to the official buffer */
       char* official = get_buffer();
       if(official == NULL){
@@ -291,6 +293,8 @@ void populate_keymappings_upper(){
      keymappings_upper[0x26] = 'L';
      keymappings_upper[0x27] = ':';
      keymappings_upper[0x28] = '"';
+
+     keymappings_upper[0x1C] = '\n';
 
      keymappings_upper[0x2C] = 'Z';
      keymappings_upper[0x2D] = 'X';

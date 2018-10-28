@@ -2,6 +2,8 @@
 #include "types.h"
 #include "lib.h"
 #include "syscall.h"
+#include "vc.h"
+#include "rtc.h"
 
 PCB_t test_pcb;
 
@@ -11,10 +13,18 @@ int32_t read(int32_t fd, void* buf, int32_t n_bytes){
        * 2. Call the function in the file descriptor
        * 3. Return the number of bytes read
        */
-       int32_t retval;
-       retval = (test_pcb.fd[fd].operations_pointer)(0, test_pcb.fd[fd].inode, test_pcb.fd[fd].file_pos, buf, n_bytes);
-       test_pcb.fd[fd].file_pos += retval;
-       return retval;
+       switch(fd){
+             case 0:
+                  return vc_read(buf, n_bytes);
+             case 1:
+                  return -1;
+             default:{
+                   int32_t retval;
+                   retval = (test_pcb.fd[fd].operations_pointer)(0, test_pcb.fd[fd].inode, test_pcb.fd[fd].file_pos, (uint8_t *)buf, n_bytes);
+                   test_pcb.fd[fd].file_pos += retval;
+                   return retval;
+             }
+       }
 }
 
 int32_t write(int32_t fd, const void * buf, int32_t n_bytes){
@@ -23,7 +33,14 @@ int32_t write(int32_t fd, const void * buf, int32_t n_bytes){
        * 2. Call the function in the file descriptor
        * 3. Return the value of the associated function
        */
-       return (test_pcb.fd[fd].operations_pointer)(1, 0, 0, 0, 0);
+       switch(fd){
+             case 0:
+                  return -1;
+             case 1:
+                  return vc_write((uint8_t *)buf, n_bytes);
+             default:
+                  return (test_pcb.fd[fd].operations_pointer)(1, 0, 0, 0, 0);
+       }
 }
 
 int32_t open(const uint8_t * filename){
@@ -45,6 +62,7 @@ int32_t open(const uint8_t * filename){
        switch(temp_dentry.file_type){
              case 0:
                   //RTC
+                  (test_pcb.fd[2].operations_pointer) = rtc_io;
                   return 0;
              case 1:
                   //Directory
