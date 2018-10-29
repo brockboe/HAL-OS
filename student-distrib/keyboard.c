@@ -24,13 +24,14 @@ static unsigned int cap_flag;
 static unsigned char tmpbuffer[KEYBOARD];
 static unsigned int next_available;
 
-#define ENTER  0x1C
-#define CTRL_L 0x1D
-#define CTRL_R 0x1D
+#define ENTER     0x1C
+#define CTRL_L    0x1D
+#define CTRL_R    0x1D
 #define BACKSPACE 0x0E
-#define SHIFT_L 0x2A
-#define SHIFT_R 0x36
+#define SHIFT_L   0x2A
+#define SHIFT_R   0x36
 #define CAPS_LOCK 0x3A
+#define TAB       0x0F
 
 #define U_S_L 0xAA
 #define U_S_R 0xB6
@@ -114,6 +115,10 @@ void keyboard_interrupt_handler(){
                   break;
             }
 
+            case(TAB): {
+                   tab();
+                   break;
+            }
             //check for shift flag.
             case SHIFT_L:{
                   shift_flag = 1;

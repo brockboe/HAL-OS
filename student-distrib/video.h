@@ -5,27 +5,33 @@
 #define TERMWIDTH 80
 #define MAXCHAR TERMHEIGHT * TERMWIDTH
 
+
+/* struct of video memory data */
 typedef struct vid_data {
       uint8_t character;
       uint8_t highbits;
 } vid_data_t;
 
+
+/* struct containing offset of terminal display */
 typedef struct terminal_info {
       uint32_t offset;
 } terminal_info_t;
 
-void vid_init();
+void vid_init();                               /* initialization of video display     */
 
-void clear_term();
+void clear_term();                             /* clears the terminal                 */
 
-void print_term(uint8_t * string, int length);
+void print_term(uint8_t * string, int length); /* prints string to terminal           */
 
-void printchar_term(char a);
+void printchar_term(char a);                   /* prints character to terminal        */
 
-void backspace();
+void backspace();                              /* deletes last character              */
 
-void set_term_x(uint32_t x);
+void tab();                                    /* indents offset by tab               */
 
-void print_num(int x);
+void set_term_x(uint32_t x);                   /* adjusts terminal offset by x        */
 
-void fill_color();
+void print_num(int x);                         /* test function for printing numbers  */
+
+void fill_color();                             /* fills display with red              */

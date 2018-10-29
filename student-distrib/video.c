@@ -8,12 +8,12 @@
 vid_data_t * display;
 terminal_info_t tinfo;
 
-/* video_initialization
- * DESCRIPTION : initialze the terminal display to cyan as default
- * INPUT : none
- * OUTPUT :none
- * EFFECT : initialze the terminal display to cyan as default
- * RETURN : none
+/* vid_init
+ * Description : initialize the terminal display  -- red as default
+ * Input : none
+ * Output : none
+ * Side effects: none
+ * Return : none
  */
 void vid_init(){
       int i;
@@ -28,11 +28,11 @@ void vid_init(){
 }
 
 /* fill_color
- * DESCRIPTION : fill the terminal with desired color (RED in our case )
- * INPUT : none
- * OUTPUT : none
- * EFFECT : fill the terminal by color red after first initialilzation
- * RETURN : none
+ * Description : Helper function to fill display with red as font color
+ * Input : none
+ * Output : none
+ * Side effects: none
+ * Return : none
  */
 
 void fill_color(){
@@ -45,12 +45,11 @@ void fill_color(){
 }
 
 /* clear_term
- * DESCRIPTION : clear up the terminal's charactes
- * INPUT : none
- * OUTPUT : none
- * EFFECT :called with ctrl+l is hit, wipe the terminal's characters
- *         reposition the cursor's place at (0,0)
- * RETURN :none
+ * Description : Clears terminal, can be called with ctrl + l
+ * Input : none
+ * Output : none
+ * Side effects: none
+ * Return :none
  */
 void clear_term(){
       int i;
@@ -64,12 +63,11 @@ void clear_term(){
 }
 
 /* scroll_term
- * DESCRIPTION : called when the terminal is fully written and need to move upwards for one empty line at bottom
- * INPUT : none
- * OUTPUT : none
- * EFFECT : shift the display screen up with one empty line at the bottom
- *          move the cursor to the correct place
- * RETURN :none
+ * Description : shifts characters on display when last line is reached
+ * Input : none
+ * Output : none
+ * Side effects: shifts location of characters on display, clears last line
+ * Return :none
  */
 void scroll_term(){
       int i;
@@ -87,13 +85,11 @@ void scroll_term(){
 }
 
 /* print_term
- * DESCRIPTION : called when 'ENTER' is hit and should display chars typed by user
- * INPUT : string - character string that needed to be printed
+ * Description : behaves as a printf function printing the string of given length to the terminal
+ * Input : string - character string to be printed to screen
  *         length - the length of the string
- * OUTPUT : none
- * EFFECT : display the characters on the terminal by modifying the display screen
- *          check for if needed to scroll if the terminal display is fully written
- *          move the cursor to its correct position
+ * Output : none
+ * Side effects: edits display and calls scroll_term when bottom of terminal is reached
  * RETURN : none
  */
 void print_term(uint8_t * string, int length){
@@ -120,13 +116,11 @@ void print_term(uint8_t * string, int length){
       }
 }
 
-/* print_term
- * DESCRIPTION : called whenever user typed in a character
- * INPUT : a - the character that needed to be printed
- * OUTPUT : none
- * EFFECT : display the character just typed in by the user
- *          check for if needed to scroll if the terminal is fully written
- *          update cursor's position
+/* printchar_term
+ * Description : behaves as putc function by printing character to terminal
+ * Input : char a - the character to be printed to terminal
+ * Output : none
+ * Side effects: edits display and calls scroll_term when bottom of temrinal is reached
  * RETURN : none
  */
 void printchar_term(char a){
@@ -152,11 +146,10 @@ void printchar_term(char a){
 }
 
 /* backspace
- * DESCRIPTION : called when user hit 'BACKSPACE' to delete a character
- * INPUT : none
- * OUTPUT : none
- * EFFECT : move cursor backward one position
- *          wipe out the last character displated on the terminal
+ * Description : Removes last character from terminal
+ * Input : none
+ * Output : none
+ * Side effects: wipes character from display, moves cursor back one
  * RETURN : none
  */
 void backspace(){
@@ -169,26 +162,28 @@ void backspace(){
 }
 
 /* tab
- * DESCRIPTION : move the cursor to the corresponding position after hitting tab
- * INPUT : none
- * OUTPUT : none
- * EFFECT : move the cursor to the corresponding position after hitting tab
+ * Description : moves cursor 10 spaces forward
+ * Input : none
+ * Output : none
+ * Side effects: none
  * RETURN : none
  */
 void tab(){
-      //set the cursor to the next corresponding position
-      tinfo.offset = (tinfo.offset / 10) + 10;
-      if(tinfo.offset > MAXCHAR){
+      if(tinfo.offset == MAXCHAR){
             scroll_term();
+      }
+      tinfo.offset = tinfo.offset + 10;
+      if(tinfo.offset > MAXCHAR){
+            tinfo.offset = MAXCHAR;
       }
       return;
 }
 
 /* set_term_x
- * DESCRIPTION : move the cursor to the correct character
- * INPUT : x - the term where cursor should be at
- * OUTPUT : none
- * EFFECT : move the cursor to the correct character
+ * Description : moves cursor by x input
+ * Input : x - how far along cursor is to be moved
+ * Output : none
+ * Side effects: none
  * RETURN : none
  */
 void set_term_x(uint32_t x){
@@ -199,11 +194,12 @@ void set_term_x(uint32_t x){
       tinfo.offset += x;
       return;
 }
+
 /* print_num
- * DESCRIPTION : print the number of its correct order of characters digits
- * INPUT : none
+ * Description : Helper function for printing large integer numbers to terminal
+ * Input : none
  * OUTPUT : none
- * EFFECT : print the number of its correct order of characters digits
+ * Side effects: none
  * RETURN : none
  */
 void print_num(int x){
@@ -212,13 +208,11 @@ void print_num(int x){
       int low_place;
       int remaining = x;
 
-      //print 0 if the char is 0
       if(x == 0){
             printchar_term('0');
             return;
       }
 
-      //grab each digit from the number
       while(remaining > 0){
             count++;
             low_place = remaining % 10;
@@ -226,7 +220,6 @@ void print_num(int x){
             num_ascii[count] = (char)(low_place + '0');
       }
 
-      //print the number
       while(count >= 0){
             printchar_term(num_ascii[count]);
             count--;

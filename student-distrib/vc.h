@@ -2,12 +2,6 @@
 #define _VC_H
 #include "types.h"
 
-//
-// typedef struct{
-//   unsigned long osem;
-//   unsigned long isem;
-// } sems_t;
-
 #define BUFFER_SIZE 128
 #define VGA_WIDTH 80
 
