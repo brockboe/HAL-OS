@@ -169,7 +169,7 @@ void backspace(){
  * RETURN : none
  */
 void tab(){
-      if(tinfo.offset > MAXCHAR){
+      if(tinfo.offset == MAXCHAR){
             scroll_term();
       }
       if((tinfo.offset % TERMWIDTH + 10) > TERMWIDTH){
