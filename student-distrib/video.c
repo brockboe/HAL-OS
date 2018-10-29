@@ -162,20 +162,23 @@ void backspace(){
 }
 
 /* tab
- * Description : moves cursor 10 spaces forward
+ * Description : moves cursor 10 spaces forward, if cursor would overshoot to next line, stops that from occuring
  * Input : none
  * Output : none
- * Side effects: none
+ * Side effects: calls scroll_term if MAXCHAR reached
  * RETURN : none
  */
 void tab(){
-      if(tinfo.offset == MAXCHAR){
+      if(tinfo.offset > MAXCHAR){
             scroll_term();
       }
-      tinfo.offset = tinfo.offset + 10;
-      if(tinfo.offset > MAXCHAR){
-            tinfo.offset = MAXCHAR;
+      if((tinfo.offset % TERMWIDTH + 10) > TERMWIDTH){
+            tinfo.offset += (TERMWIDTH - tinfo.offset % TERMWIDTH);
       }
+      else{
+            tinfo.offset = tinfo.offset + 10;
+      }
+
       return;
 }
 
