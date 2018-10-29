@@ -30,6 +30,7 @@ int32_t rtc_read();
 /* Function that closes the RTC */
 int32_t rtc_close();
 
+/*Consolidates all the RTC read and write functionality into one function*/
 int32_t rtc_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
 
 #endif  /* _RTC_H */

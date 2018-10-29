@@ -147,6 +147,10 @@ void page_fault_test() {
 
 /* Checkpoint 2 tests */
 
+/* list_files
+ * Prints a continuous list of all the files inside the file system, including
+ * their name, size, and file type.
+ */
 void list_files(){
 	int32_t temp;
 	int32_t fd;
@@ -158,20 +162,24 @@ void list_files(){
 
 	clear_term();
 
+	//Grab the number of files.
 	file_count = (int)filesys_begin->num_dir_entries;
 	fd = open((uint8_t *)".");
 
 	for(i = 0; i < file_count; i++){
 		set_term_x(1);
+		//get the file name
 		temp = read(fd, fname, FNAME_MAX_LEN);
 		temp = write(1, fname, FNAME_MAX_LEN);
 		temp = read_dentry_by_name(fname, &file_dentry);
 
 		file_inode = (inode_t *)(filesys_begin->directory_entries[i].inode_num + inodes_begin);
 
+		//print the file type
 		set_term_x(40);
 		print_term((uint8_t *)"filetype: ", 10);
 		print_num((int)file_dentry.file_type);
+		//print the size
 		set_term_x(60);
 		print_term((uint8_t *)"size: ", 6);
 		print_num((int)file_inode->length);
@@ -180,6 +188,10 @@ void list_files(){
 
 }
 
+/* print_file
+ * Prints the contens of any file when given the name of the desired file as
+ * a character string
+ */
 void print_file(uint8_t * fname){
 	int temp;
 	int32_t fd;
@@ -187,17 +199,24 @@ void print_file(uint8_t * fname){
 
 	uint8_t charbuffer[1000];
 
+	//clear the buffer
 	for(i = 0; i < 1000; i++){
 		charbuffer[i] = 0;
 	}
 
 	clear_term();
 
+	//open, read, and print the file
 	fd = open(fname);
 	temp = read(fd, charbuffer, 1000);
 	temp = write(1, charbuffer, 1000);
 }
 
+/* print_file_by_index
+ * This function does the exact same thing as print_file, but instead of
+ * grabbing and printing the file when indexed by the file name, this time
+ * the file is indexed by it's index into the directory entries.
+ */
 void print_file_by_index(uint32_t findex){
 	int32_t temp;
 	uint8_t charbuffer[1000];
@@ -217,14 +236,20 @@ void print_file_by_index(uint32_t findex){
 	return;
 }
 
+/* RTC_IO
+ * Opens the RTC and prints a '.' character at a specific frequency. The
+ * frequency is increased as the test goes on.
+ */
 void RTC_IO(){
 	int32_t fd;
 	int32_t temp;
 	int i;
 	uint32_t buf[4];
 
+	//open the RTC
 	fd = open((uint8_t *)"rtc");
 
+	//set the frequency to 32 and print at that rate
 	clear_term();
 	*buf = 32;
 	temp = write(fd, buf, 4);
@@ -233,6 +258,7 @@ void RTC_IO(){
 		temp = read(fd, NULL, 0);
 	}
 
+	//set the frequency to 64 and print at that rate
 	clear_term();
 	*buf = 64;
 	temp = write(fd, buf, 4);
@@ -241,6 +267,7 @@ void RTC_IO(){
 		temp = read(fd, NULL, 0);
 	}
 
+	//set the frequency to 128 and print at that rate
 	clear_term();
 	*buf = 128;
 	temp = write(fd, buf, 4);
@@ -252,6 +279,11 @@ void RTC_IO(){
 	return;
 }
 
+/* free_typing
+ * This allows the user to test out the keyboard driver. The screen is cleared,
+ * and whatever the user types is echoed to the screen. whenever enter is pressed,
+ * the 128 length character buffer is printed to the screen.
+ */
 void free_typing(){
 	uint8_t charbuffer[128];
 	uint32_t retval;
@@ -265,40 +297,52 @@ void free_typing(){
 	return;
 }
 
-int filesys_test(){
+/* filesys_test
+ * Runs all the previous functions relating to drivers in succession. Whenever
+ * the user hits enter, the function moves onto the next test.
+ */
+int driver_test(){
 	fill_color();
 
 	int retval;
 	uint8_t temp[10];
 
+	//begin by listing all the files
 	list_files();
 
 	retval = read(0, (void *)temp, 1);
 
+	//print the contents of frame0.txt
 	print_file((uint8_t *)"frame0.txt");
 
 	retval = read(0, (void *)temp, 1);
 
+	//print the contents of the large file
 	print_file((uint8_t *)"verylargetextwithverylongname.tx");
 
 	retval = read(0, (void *)temp, 1);
 
+	//print the contents of sigtest
 	print_file((uint8_t *)"sigtest");
 
 	retval = read(0, (void *)temp, 1);
 
+	//run the RTC test
 	RTC_IO();
 
 	retval = read(0, (void *)temp, 1);
 
+	//print the contents of the 10th file in the directory index
 	print_file_by_index(10);
 
 	retval = read(0, (void *)temp, 1);
 
+	//print the contents of the 11th file in the directory index
 	print_file_by_index(11);
 
 	retval = read(0, (void *)temp, 1);
 
+	//Show off the typing driver
 	free_typing();
 
 	return PASS;
@@ -316,7 +360,8 @@ void launch_tests(){
 	/* paging_test */
 	TEST_OUTPUT("paging_test", paging_test());
 
-	filesys_test();
+	/*Tun all the driver tests*/
+	driver_test();
 
 	return;
 }

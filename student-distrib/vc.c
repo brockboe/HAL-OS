@@ -130,6 +130,9 @@ void clr_buf(){
 // }
 
 
+/* get_buffer
+ * return a pointer to a buffer where the official keyboard output is stored.
+ */
 char * get_buffer(){
   return vc_buffer;
 }

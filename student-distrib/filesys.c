@@ -126,7 +126,15 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t * buf, uint32_t lengt
       return bytes_read;
 }
 
-
+/* file_open
+ * DESCRIPTION:         Looks into the dentries and returns an inode pointer
+ *                      pointing to the address of the inode corresponding to
+ *                      the given file
+ * INPUTS:              fname - a character string of the name of the file.
+ * OUTPUTS:             an inode pointer pointing to the file requested, or
+ *                      a NULL pointer if the file could not be found.
+ * SIDE EFFECTS:        NONE
+ */
 inode_t * file_open(uint8_t * fname){
       inode_t * inode_return = NULL;
       dentry_t * dentry;
@@ -135,18 +143,47 @@ inode_t * file_open(uint8_t * fname){
       return inode_return;
 }
 
+/* file_write
+ * Because our filesystem is read-only, this function does nothing but
+ * return -1;
+ */
 int32_t file_write(){
       return -1;
 }
 
+/* file_read
+ * DESCRIPTION:   file_read reads the contents of the file and saves them in
+ *                a buffer.
+ * INPUTS:        inode_index - the index number giving the offset in the
+ *                inode list relative to the first inode
+ *                offset - the offset into the file from where the data is to
+ *                be read
+ *                buf - the array where to store the data that is grabbed from
+ *                the file
+ *                nbytes - the number of bytes to grab from the file
+ * OUTPUTS:       returns the number of bytes read from the file
+ * SIDE EFFECTS:  reads the nbytes from the file and stores them in the buffer
+ */
 int32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
       return read_data(inode_index, offset, buf, nbytes);
 }
 
+/* file_close
+ * does nothing, but returns 0 on exit.
+ */
 int32_t file_close(){
       return 0;
 }
 
+/* dir_open
+ * DESCRIPTION:         Opens a directory when given the name of the directory
+ *                      as a character array
+ * INPUTS:              fname - the character array containing the name of the
+ *                      directory that is to be read
+ * OUTPUTS:             returns a pointer to the inode of the associated directory.
+ *                      returns NULL when the directory cannot be found
+ * SIDE EFFECTS:        none
+ */
 inode_t * dir_open(uint8_t * fname){
       inode_t * inode_return = NULL;
       dentry_t * dentry;
@@ -155,16 +192,32 @@ inode_t * dir_open(uint8_t * fname){
       return inode_return;
 }
 
+/* dir_write
+ * Does nothing but return -1, because out system is read-only.
+ */
 int32_t dir_write(){
       return -1;
 }
 
+/* dir_read
+ * DESCRIPTION:   dir_read looks into a directory and reads the names of
+ *                all the files found within the directory as one contiguous
+ *                stream of information
+ * INPUTS:        offset - the offset into the list of file names within
+ *                the directory
+ *                buf - the array to where the data is to be written
+ *                nbytes - the number of bytes to be written
+ * OUTPUTS:       returns the number of bytes written from the file.
+ * SIDE EFFECTS:  copies nbytes bytes from the directory file names into
+ *                the buffer supplied as argument
+ */
 int32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes){
       int bits_copied = 0;
       int i;
       int local_off = offset;
       int total_dentries = filesys_begin->num_dir_entries;
 
+      //iterate through all the file names and copy them into the buffer as needed
       for(i = 0; i<nbytes && (local_off/FNAME_MAX_LEN)<total_dentries; i++){
             buf[i] = filesys_begin->directory_entries[(local_off/FNAME_MAX_LEN)].file_name[local_off % FNAME_MAX_LEN];
             local_off++;
@@ -174,10 +227,18 @@ int32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes){
       return bits_copied;
 }
 
+/* dir_close
+ * does nothing, but returns 0 on exit
+ */
 int32_t dir_close(){
       return 0;
 }
 
+/* file_io
+ * Consolidates the file read and write functions into one function, which is later
+ * used by the file descriptors in syscall.c and syscall.h. See the above file
+ * descriptions for what the inputs mean and what the functions do.
+ */
 int32_t file_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
       switch(action){
             case 0:
@@ -192,6 +253,11 @@ int32_t file_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t 
       return 0;
 }
 
+/* dir_io
+ * consolidates the directory read and write functions into one function, which is
+ * later used by the file descriptors in syscall.c and syscall.h. See the above file
+ * descriptions for what the inputs mean and what the functions do.
+ */
 int32_t dir_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
       switch(action){
             case 0:
@@ -251,6 +317,10 @@ int32_t stringlength(const uint8_t * string){
       return length;
 }
 
+/*fnamecopy
+ *This function takes two strings as argument and copies the contents
+ *of source into destination. It returns nothing.
+ */
 void fnamecopy(const uint8_t * source, uint8_t * dest){
       int i;
       for(i = 0; i < FNAME_MAX_LEN; i++){

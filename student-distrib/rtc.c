@@ -181,6 +181,12 @@ int32_t rtc_close() {
     return 0;
 }
 
+/* RTC_IO
+ * Consolidates all the RTC read and write functionality into one function.
+ * This is useful later in the file descriptors and for system calls. See
+ * syscall.c for more information on how this function is used, and see
+ * the above function descriptors to see what each individual function does.
+ */
 int32_t rtc_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
       switch(action){
             case 0:

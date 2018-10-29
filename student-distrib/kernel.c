@@ -66,6 +66,7 @@ void entry(unsigned long magic, unsigned long addr) {
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
             printf("First few bytes of module:\n");
 
+            /*Initialize the filesystem when given a pointer to the module*/
             init_filesys((boot_block_t *)mod->mod_start);
 
             for (i = 0; i < 16; i++) {
@@ -164,6 +165,7 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init paging*/
     init_paging();
 
+    /*Initialize the video functions*/
     vid_init();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
