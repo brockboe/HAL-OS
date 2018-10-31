@@ -43,6 +43,11 @@ int32_t read_dentry_by_name(const uint8_t * fname, dentry_t * dentry){
             return -1;
       }
 
+      /*Check for NULL pointers*/
+      if(fname == NULL || dentry == NULL){
+            return -1;
+      }
+
       /*Iterate through the boot block and search for the dentry with the same name*/
       while(i < MAX_DENTRY){
             /*If we have a match, copy it into dentry and leave*/
@@ -55,7 +60,7 @@ int32_t read_dentry_by_name(const uint8_t * fname, dentry_t * dentry){
             i++;
       }
       /*If we haven't found it, return -1*/
-      return 1;
+      return -1;
 }
 
 /*Important note for testing: Very large file is in index 11*/
@@ -71,6 +76,11 @@ int32_t read_dentry_by_name(const uint8_t * fname, dentry_t * dentry){
  * OUTPUTS        returns 0 when the file can be found and -1 on error.
  */
 int32_t read_dentry_by_index(uint32_t index, dentry_t * dentry){
+      //check for null pointer
+      if(dentry == NULL){
+            return -1;
+      }
+
       /*Check to ensure the index is in the bounds*/
       if(index > filesys_begin->num_dir_entries){
             return -1;
@@ -105,6 +115,16 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t * buf, uint32_t lengt
       int i;
       int bytes_read = 0;
 
+      //ensure we're not out of bounds
+      if(inode > filesys_begin->num_inodes){
+            return -1;
+      }
+
+      /*Check for NULL pointer*/
+      if(buf == NULL){
+            return -1;
+      }
+
       //iterate through and grab the data
       for(i = 0; i < length; i++){
 
@@ -124,23 +144,6 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t * buf, uint32_t lengt
       }
 
       return bytes_read;
-}
-
-/* file_open
- * DESCRIPTION:         Looks into the dentries and returns an inode pointer
- *                      pointing to the address of the inode corresponding to
- *                      the given file
- * INPUTS:              fname - a character string of the name of the file.
- * OUTPUTS:             an inode pointer pointing to the file requested, or
- *                      a NULL pointer if the file could not be found.
- * SIDE EFFECTS:        NONE
- */
-inode_t * file_open_inode(uint8_t * fname){
-      inode_t * inode_return = NULL;
-      dentry_t * dentry;
-      read_dentry_by_name(fname, dentry);
-      inode_return = (inode_t *)(inodes_begin + dentry->inode_num);
-      return inode_return;
 }
 
 int32_t file_open(uint8_t * fname){
@@ -177,23 +180,6 @@ int32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t
  */
 int32_t file_close(){
       return 0;
-}
-
-/* dir_open
- * DESCRIPTION:         Opens a directory when given the name of the directory
- *                      as a character array
- * INPUTS:              fname - the character array containing the name of the
- *                      directory that is to be read
- * OUTPUTS:             returns a pointer to the inode of the associated directory.
- *                      returns NULL when the directory cannot be found
- * SIDE EFFECTS:        none
- */
-inode_t * dir_open_inode(uint8_t * fname){
-      inode_t * inode_return = NULL;
-      dentry_t * dentry;
-      read_dentry_by_name(fname, dentry);
-      inode_return = (inode_t *)(inodes_begin + dentry->inode_num);
-      return inode_return;
 }
 
 int32_t dir_open(uint8_t fname){

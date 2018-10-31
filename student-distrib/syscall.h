@@ -1,9 +1,6 @@
 #include "types.h"
 #include "filesys.h"
-
-typedef struct PCB {
-      file_descriptor_t fd[6];
-} PCB_t;
+#include "structures.h"
 
 //read data from a file
 int32_t read(int32_t fd, void* buf, int32_t n_bytes);

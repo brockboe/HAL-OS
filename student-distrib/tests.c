@@ -197,10 +197,10 @@ void print_file(uint8_t * fname){
 	int32_t fd;
 	int i;
 
-	uint8_t charbuffer[1000];
+	uint8_t charbuffer[6000];
 
 	//clear the buffer
-	for(i = 0; i < 1000; i++){
+	for(i = 0; i < 6000; i++){
 		charbuffer[i] = 0;
 	}
 
@@ -208,8 +208,8 @@ void print_file(uint8_t * fname){
 
 	//open, read, and print the file
 	fd = open(fname);
-	temp = read(fd, charbuffer, 1000);
-	temp = write(1, charbuffer, 1000);
+	temp = read(fd, charbuffer, 6000);
+	temp = write(1, charbuffer, 6000);
 }
 
 /* print_file_by_index

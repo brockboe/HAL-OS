@@ -7,50 +7,7 @@
 #define FILENAME_MAXLEN 32
 
 #include "types.h"
-
-/*Directory entry structure*/
-typedef struct dentry {
-      union{
-            uint32_t val[2];
-            struct{
-                  uint8_t file_name[32];
-                  uint32_t file_type;
-                  uint32_t inode_num;
-                  uint8_t reserved[24];
-            };
-      }__attribute__ ((packed));
-} dentry_t;
-
-/*Boot block structure*/
-typedef struct boot_block {
-      uint32_t num_dir_entries;
-      uint32_t num_inodes;
-      uint32_t num_data_blocks;
-      uint8_t reserved[52];
-      dentry_t directory_entries[63];
-} boot_block_t;
-
-typedef struct inode {
-      uint32_t length;
-      uint32_t block_location[1023];
-} inode_t;
-
-/*file descriptor pointer*/
-typedef struct file_descriptor {
-      union{
-            uint32_t val[4];
-            struct{
-                  int32_t (*operations_pointer)(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
-                  uint32_t inode;
-                  uint32_t file_pos;
-                  uint32_t flags;
-            };
-      } __attribute__ ((packed));
-} file_descriptor_t;
-
-typedef struct data_block {
-      uint8_t data[4096];
-} data_block_t;
+#include "structures.h"
 
 /*Points to the very beginning of the filesystem*/
 boot_block_t * filesys_begin;
@@ -76,9 +33,6 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t * dentry);
 //compares to strings to check if they are equal
 int32_t stringcompare(const uint8_t * a, const uint8_t * b, int cmplen);
 
-//opens a file
-inode_t * file_open_inode(uint8_t * fname);
-
 //writes to a file
 int32_t file_write();
 
@@ -87,9 +41,6 @@ int32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t
 
 //close a file descriptor
 int32_t file_close();
-
-//opens a directory and returns the associated inode
-inode_t * dir_open_inode(uint8_t * fname);
 
 //writes to a directory
 int32_t dir_write();
