@@ -135,12 +135,16 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t * buf, uint32_t lengt
  *                      a NULL pointer if the file could not be found.
  * SIDE EFFECTS:        NONE
  */
-inode_t * file_open(uint8_t * fname){
+inode_t * file_open_inode(uint8_t * fname){
       inode_t * inode_return = NULL;
       dentry_t * dentry;
       read_dentry_by_name(fname, dentry);
       inode_return = (inode_t *)(inodes_begin + dentry->inode_num);
       return inode_return;
+}
+
+int32_t file_open(uint8_t * fname){
+      return 0;
 }
 
 /* file_write
@@ -184,12 +188,16 @@ int32_t file_close(){
  *                      returns NULL when the directory cannot be found
  * SIDE EFFECTS:        none
  */
-inode_t * dir_open(uint8_t * fname){
+inode_t * dir_open_inode(uint8_t * fname){
       inode_t * inode_return = NULL;
       dentry_t * dentry;
       read_dentry_by_name(fname, dentry);
       inode_return = (inode_t *)(inodes_begin + dentry->inode_num);
       return inode_return;
+}
+
+int32_t dir_open(uint8_t fname){
+      return 0;
 }
 
 /* dir_write

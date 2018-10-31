@@ -114,8 +114,18 @@ void int_setup(){
  *this function then then calls the handler associated with this
  *interrupt vector
  */
-void C_int_dispatcher(unsigned long interrupt_vector){
-      handler_table[interrupt_vector]();
+void C_int_dispatcher(  unsigned long EBX,
+                        unsigned long ECX,
+                        unsigned long EDX,
+                        unsigned long ESI,
+                        unsigned long EDI,
+                        unsigned long EBP,
+                        unsigned long EAX,
+                        unsigned long DS,
+                        unsigned long ES,
+                        unsigned long FS,
+                        unsigned long vector_num){
+      handler_table[vector_num]();
       return;
 }
 

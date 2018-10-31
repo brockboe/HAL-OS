@@ -37,14 +37,10 @@ common_interrupt:
       PUSHL %EDX
       PUSHL %ECX
       PUSHL %EBX
-      #Push the interrupt_num as argument
-      PUSHL interrupt_num
 
       #Call the dispatcher so we're now working in C
       CALL C_int_dispatcher
 
-      #Clear the argument
-      ADDL $4, %ESP
       #Restore all the registers
       POPL %EBX
       POPL %ECX
@@ -59,6 +55,8 @@ common_interrupt:
       POPW %ES
       ADDL $2, %ESP
       POPW %FS
+      #Pop off the argument
+      ADDL $4, %ESP
 
       IRET
 
@@ -68,139 +66,139 @@ common_interrupt:
 #which then further acts upon the interrupt.
 
 _0:
-      MOVL $0, interrupt_num
+      PUSHL $0
       JMP common_interrupt
 
 _1:
-      MOVL $1, interrupt_num
+      PUSHL $1
       JMP common_interrupt
 
 _2:
-      MOVL $2, interrupt_num
+      PUSHL $2
       JMP common_interrupt
 
 _3:
-      MOVL $3, interrupt_num
+      PUSHL $3
       JMP common_interrupt
 
 _4:
-      MOVL $4, interrupt_num
+      PUSHL $4
       JMP common_interrupt
 
 _5:
-      MOVL $5, interrupt_num
+      PUSHL $5
       JMP common_interrupt
 
 _6:
-      MOVL $6, interrupt_num
+      PUSHL $6
       JMP common_interrupt
 
 _7:
-      MOVL $7, interrupt_num
+      PUSHL $7
       JMP common_interrupt
 
 _8:
-      MOVL $8, interrupt_num
+      PUSHL $8
       JMP common_interrupt
 
 _9:
-      MOVL $9, interrupt_num
+      PUSHL $9
       JMP common_interrupt
 
 _10:
-      MOVL $10, interrupt_num
+      PUSHL $10
       JMP common_interrupt
 
 _11:
-      MOVL $11, interrupt_num
+      PUSHL $11
       JMP common_interrupt
 
 _12:
-      MOVL $12, interrupt_num
+      PUSHL $12
       JMP common_interrupt
 
 _13:
-      MOVL $13, interrupt_num
+      PUSHL $13
       JMP common_interrupt
 
 _14:
-      MOVL $14, interrupt_num
+      PUSHL $14
       JMP common_interrupt
 
 _15:
-      MOVL $15, interrupt_num
+      PUSHL $15
       JMP common_interrupt
 
 _16:
-      MOVL $16, interrupt_num
+      PUSHL $16
       JMP common_interrupt
 
 _17:
-      MOVL $17, interrupt_num
+      PUSHL $17
       JMP common_interrupt
 
 _18:
-      MOVL $18, interrupt_num
+      PUSHL $18
       JMP common_interrupt
 
 _19:
-      MOVL $19, interrupt_num
+      PUSHL $19
       JMP common_interrupt
 
 _20:
-      MOVL $20, interrupt_num
+      PUSHL $20
       JMP common_interrupt
 
 _21:
-      MOVL $21, interrupt_num
+      PUSHL $21
       JMP common_interrupt
 
 _22:
-      MOVL $22, interrupt_num
+      PUSHL $22
       JMP common_interrupt
 
 _23:
-      MOVL $23, interrupt_num
+      PUSHL $23
       JMP common_interrupt
 
 _24:
-      MOVL $24, interrupt_num
+      PUSHL $24
       JMP common_interrupt
 
 _25:
-      MOVL $25, interrupt_num
+      PUSHL $25
       JMP common_interrupt
 
 _26:
-      MOVL $26, interrupt_num
+      PUSHL $26
       JMP common_interrupt
 
 _27:
-      MOVL $27, interrupt_num
+      PUSHL $27
       JMP common_interrupt
 
 _28:
-      MOVL $28, interrupt_num
+      PUSHL $28
       JMP common_interrupt
 
 _29:
-      MOVL $29, interrupt_num
+      PUSHL $29
       JMP common_interrupt
 
 _30:
-      MOVL $30, interrupt_num
+      PUSHL $30
       JMP common_interrupt
 
 default_linkage:
-      MOVL $256, interrupt_num
+      PUSHL $256
       JMP common_interrupt
 
 keyboard:
-      MOVL $0x21, interrupt_num
+      PUSHL $0x21
       JMP common_interrupt
 
 RTC:
-      MOVL $0x28, interrupt_num
+      PUSHL $0x28
       JMP common_interrupt
 
 #This is a table containing pointers to the linkage functions

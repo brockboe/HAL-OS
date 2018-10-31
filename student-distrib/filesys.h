@@ -77,7 +77,7 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t * dentry);
 int32_t stringcompare(const uint8_t * a, const uint8_t * b, int cmplen);
 
 //opens a file
-inode_t * file_open(uint8_t * fname);
+inode_t * file_open_inode(uint8_t * fname);
 
 //writes to a file
 int32_t file_write();
@@ -89,7 +89,7 @@ int32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t
 int32_t file_close();
 
 //opens a directory and returns the associated inode
-inode_t * dir_open(uint8_t * fname);
+inode_t * dir_open_inode(uint8_t * fname);
 
 //writes to a directory
 int32_t dir_write();
