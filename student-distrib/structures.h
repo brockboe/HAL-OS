@@ -30,15 +30,30 @@ typedef struct inode {
       uint32_t block_location[1023];
 } inode_t;
 
+typedef struct flags{
+      uint8_t in_use;
+      uint8_t reserved1;
+      uint8_t reserved2;
+      uint8_t reserved3;
+} flags_t;
+
+/*operations jump table used for syscalls*/
+typedef struct op_jmp_table {
+      int32_t (*dev_open)(const uint8_t * filename);
+      int32_t (*dev_read)(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+      int32_t (*dev_write)(int32_t fd, const void * buf, int32_t n_bytes);
+      int32_t (*dev_close)(int32_t fd);
+} op_jmp_table_t;
+
 /*file descriptor pointer*/
 typedef struct file_descriptor {
       union{
             uint32_t val[4];
             struct{
-                  int32_t (*operations_pointer)(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+                  op_jmp_table_t * actions;
                   uint32_t inode;
                   uint32_t file_pos;
-                  uint32_t flags;
+                  flags_t flags;
             };
       } __attribute__ ((packed));
 } file_descriptor_t;
@@ -52,13 +67,5 @@ typedef struct data_block {
 typedef struct PCB {
       file_descriptor_t fd[6];
 } PCB_t;
-
-/*operations jump table used for syscalls*/
-typedef struct op_jmp_table {
-      int32_t (*dev_open)(const uint8_t * filename);
-      int32_t (*dev_read)(int32_t fd, void * buf, int32_t n_bytes);
-      int32_t (*dev_write)(int32_t fd, const void * buf, int32_t n_bytes);
-      int32_t (*dev_close)(int32_t fd);
-} op_jmp_table_t;
 
 #endif

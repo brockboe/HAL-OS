@@ -33,28 +33,28 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t * dentry);
 //compares to strings to check if they are equal
 int32_t stringcompare(const uint8_t * a, const uint8_t * b, int cmplen);
 
+//open a file
+int32_t file_open(const uint8_t * filename);
+
 //writes to a file
-int32_t file_write();
+int32_t file_write(int32_t fd, const void * buf, int32_t n_bytes);
 
 //reads data from a file into a buffer
 int32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
 
 //close a file descriptor
-int32_t file_close();
+int32_t file_close(int32_t fd);
 
-//writes to a directory
-int32_t dir_write();
+//open a directory
+int32_t dir_open(const uint8_t * filename);
 
-//reads all the file names from a directory
-int32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes);
+//read a directory
+int32_t dir_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+
+//write to a directroy
+int32_t dir_write(int32_t fd, const void * buf, int32_t n_bytes);
 
 //close a directory file descriptor
-int32_t dir_close();
-
-//consolidates the directory read and write functionality
-int32_t dir_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
-
-//consolidates the file read and write functionality.
-int32_t file_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+int32_t dir_close(int32_t fd);
 
 #endif

@@ -81,7 +81,7 @@ void rtc_interrupt_handler(void) {
 }
 
 /* Function that opens the RTC */
-int32_t rtc_open() {
+int32_t rtc_open(const uint8_t * filename) {
     /* if rtc hasn't been initialized, we want to initialize it */
     if(!rtc_init_check)
     {
@@ -101,7 +101,7 @@ int32_t rtc_open() {
 }
 
 /* Function that writes to the RTC */
-int32_t rtc_write(const void * buf, int32_t nbytes) {
+int32_t rtc_write(int32_t fd, const void * buf, int32_t nbytes) {
     /* Variabl that will hold desired frequency from buf */
     uint32_t frequency;
     uint32_t rate;
@@ -166,7 +166,7 @@ int32_t rtc_write(const void * buf, int32_t nbytes) {
 }
 
 /* Function that reads the RTC */
-int32_t rtc_read() {
+int32_t rtc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes) {
     /* Spin while we wait for interrupts to get disabled */
     while(!rtc_interrupt_flag) {}
 
@@ -177,24 +177,6 @@ int32_t rtc_read() {
 }
 
 /* Function that closes the RTC */
-int32_t rtc_close() {
+int32_t rtc_close(int32_t fd) {
     return 0;
-}
-
-/* RTC_IO
- * Consolidates all the RTC read and write functionality into one function.
- * This is useful later in the file descriptors and for system calls. See
- * syscall.c for more information on how this function is used, and see
- * the above function descriptors to see what each individual function does.
- */
-int32_t rtc_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
-      switch(action){
-            case 0:
-                  return rtc_read();
-            case 1:
-                  return rtc_write(buf, nbytes);
-            default:
-                  return 1;
-      }
-      return 1;
 }

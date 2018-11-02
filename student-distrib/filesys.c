@@ -146,7 +146,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t * buf, uint32_t lengt
       return bytes_read;
 }
 
-int32_t file_open(uint8_t * fname){
+int32_t file_open(const uint8_t * fname){
       return 0;
 }
 
@@ -154,7 +154,7 @@ int32_t file_open(uint8_t * fname){
  * Because our filesystem is read-only, this function does nothing but
  * return -1;
  */
-int32_t file_write(){
+int32_t file_write(int32_t fd, const void * buf, int32_t n_bytes){
       return -1;
 }
 
@@ -178,18 +178,18 @@ int32_t file_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t
 /* file_close
  * does nothing, but returns 0 on exit.
  */
-int32_t file_close(){
+int32_t file_close(int32_t fd){
       return 0;
 }
 
-int32_t dir_open(uint8_t fname){
+int32_t dir_open(const uint8_t * filename){
       return 0;
 }
 
 /* dir_write
  * Does nothing but return -1, because out system is read-only.
  */
-int32_t dir_write(){
+int32_t dir_write(int32_t fd, const void * buf, int32_t n_bytes){
       return -1;
 }
 
@@ -205,7 +205,7 @@ int32_t dir_write(){
  * SIDE EFFECTS:  copies nbytes bytes from the directory file names into
  *                the buffer supplied as argument
  */
-int32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes){
+int32_t dir_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
       int bits_copied = 0;
       int i;
       int local_off = offset;
@@ -224,45 +224,7 @@ int32_t dir_read(uint32_t offset, uint8_t * buf, uint32_t nbytes){
 /* dir_close
  * does nothing, but returns 0 on exit
  */
-int32_t dir_close(){
-      return 0;
-}
-
-/* file_io
- * Consolidates the file read and write functions into one function, which is later
- * used by the file descriptors in syscall.c and syscall.h. See the above file
- * descriptions for what the inputs mean and what the functions do.
- */
-int32_t file_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
-      switch(action){
-            case 0:
-                  //Read the file
-                  return file_read(inode_index, offset, buf, nbytes);
-            case 1:
-                  //Write file
-                  return file_write();
-            default:
-                  return -1;
-      }
-      return 0;
-}
-
-/* dir_io
- * consolidates the directory read and write functions into one function, which is
- * later used by the file descriptors in syscall.c and syscall.h. See the above file
- * descriptions for what the inputs mean and what the functions do.
- */
-int32_t dir_io(uint32_t action, uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes){
-      switch(action){
-            case 0:
-                  //Read directory
-                  return dir_read(offset, buf, nbytes);
-            case 1:
-                  //Write Directory
-                  return dir_write();
-            default:
-                  return -1;
-      }
+int32_t dir_close(int32_t fd){
       return 0;
 }
 

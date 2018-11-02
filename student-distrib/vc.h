@@ -10,10 +10,10 @@ void init_vc(void);
 // void copy_vc(uint8_t vc_id);
 // void rstr_vc(uint8_t vc_id);
 
-int32_t vc_open(void * buf, uint32_t bytes);
-int32_t vc_close(void * buf, uint32_t bytes);
-int32_t vc_read(void * buf, uint32_t bytes);
-int32_t vc_write(void * buf, uint32_t bytes);
+int32_t vc_open(const uint8_t * filename);
+int32_t vc_close(int32_t fd);
+int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes);
+int32_t vc_write(int32_t fd, const void * buf, int32_t n_bytes);
 
 char * get_buffer();
 

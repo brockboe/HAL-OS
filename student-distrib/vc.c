@@ -30,7 +30,7 @@ void init_vc(void){
  * Side effects: clears screen
  * Return: 0 on success
  */
-int32_t vc_open(void * buf, uint32_t bytes){
+int32_t vc_open(const uint8_t * filename){
   init_vc();
   return 0;
 }
@@ -42,7 +42,7 @@ int32_t vc_open(void * buf, uint32_t bytes){
  * Side effects: None
  * Return: 0
  */
-int32_t vc_close(void * buf, uint32_t bytes){
+int32_t vc_close(int32_t fd){
 
   // if(curr_vc_id == 0)
   //     return -1;
@@ -61,12 +61,12 @@ int32_t vc_close(void * buf, uint32_t bytes){
  * Return: -1 on failure, 0 on success
  */
 
-int32_t vc_write(void * buf, uint32_t bytes){
+int32_t vc_write(int32_t fd, const void * buf, int32_t n_bytes){
   if(buf == NULL)
       return -1;
   cli();
 
-  print_term((uint8_t *)buf, bytes);
+  print_term((uint8_t *)buf, n_bytes);
 
   sti();
   return 0;
@@ -81,7 +81,7 @@ int32_t vc_write(void * buf, uint32_t bytes){
  * Return: 0 on success, -1 on failure
  */
 
-int32_t vc_read(void * buf, uint32_t bytes){
+int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t bytes){
 
     if(buf == NULL)
         return -1;

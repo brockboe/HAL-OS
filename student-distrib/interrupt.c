@@ -10,6 +10,7 @@
 #include "x86_desc.h"
 #include "int_handlers.h"
 #include "keyboard.h"
+#include "syscall.h"
 
 /*Total number of Intel-Defined interrupts*/
 #define NUM_INTEL_INTERRUPTS 30
@@ -25,6 +26,7 @@ extern void * assembly_linkage[NUM_INTEL_INTERRUPTS];
 /*These are the linkage files for the keyboard and RTC*/
 extern void keyboard();
 extern void RTC();
+extern void SYSC();
 
 /*defualt_linkage is an external function that pushes 256 and then
  *calls common_interrupt. Because the highest possible vector number
@@ -41,6 +43,7 @@ extern void default_linkage();
 void (*handler_table[TOTAL_VECTOR_NUM+1])();
 
 void install_idt_entry(int idt_offset, void handler());
+void install_trap_entry(int idt_offset, void handler());
 void RSOD(char * error);
 void install_handler(int vector_num, void handler());
 
@@ -74,6 +77,7 @@ void int_setup(){
 
       install_idt_entry(0x21, &keyboard);
       install_idt_entry(0x28, &RTC);
+      install_trap_entry(0x80, &SYSC);
 
       /*Set up the first few interrupt vectors, which are intel
        *defined faults, exceptions, and errors.
@@ -125,7 +129,14 @@ void C_int_dispatcher(  unsigned long EBX,
                         unsigned long ES,
                         unsigned long FS,
                         unsigned long vector_num){
-      handler_table[vector_num]();
+      //special case - handle a syscall
+      if(vector_num == 0x80){
+            EAX = syscall_dispatcher(EAX, EBX, ECX, EDX);
+      }
+      //otherwise we have just a normal interrupt
+      else{
+            handler_table[vector_num]();
+      }
       return;
 }
 
@@ -145,6 +156,18 @@ void install_idt_entry(int idt_offset, void handler()){
       idt[idt_offset].dpl = 0;
       idt[idt_offset].present = 1;
       return;
+}
+
+void install_trap_entry(int idt_offset, void handler()){
+      SET_IDT_ENTRY(idt[idt_offset], handler);
+      idt[idt_offset].seg_selector = KERNEL_CS;
+      idt[idt_offset].reserved3 = 1;
+      idt[idt_offset].reserved2 = 1;
+      idt[idt_offset].reserved1 = 1;
+      idt[idt_offset].reserved0 = 0;
+      idt[idt_offset].size = 1;
+      idt[idt_offset].present = 1;
+      idt[idt_offset].dpl = 0;
 }
 
 /*install_handler automates the process of putting a function
