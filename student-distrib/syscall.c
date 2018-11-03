@@ -4,6 +4,17 @@
 #include "syscall.h"
 #include "vc.h"
 #include "rtc.h"
+#include "structures.h"
+
+#define CMD_MAX_LEN 32
+#define METADATA_LEN 40
+#define X_MAGIC_1 0x7F
+#define X_MAGIC_2 0x45
+#define X_MAGIC_3 0x4C
+#define X_MAGIC_4 0x46
+#define MAX_CONCURRENT_TASKS
+#define _4MB 4194304
+#define _4KB 4096
 
 PCB_t test_pcb;
 
@@ -33,6 +44,7 @@ op_jmp_table_t dir_op_table = { &dir_open, &dir_read, &dir_write, &dir_close };
 op_jmp_table_t rtc_op_table = { &rtc_open, &rtc_read, &rtc_write, &rtc_close };
 //virtual console jump table
 op_jmp_table_t vc_op_table = { &vc_open, &vc_read, &vc_write, &vc_close};
+
 
 int32_t execute(const uint8_t * command){
       int32_t retval;
@@ -72,7 +84,7 @@ int32_t read(int32_t fd, void * buf, int32_t n_bytes){
       return retval;
 }
 
-int32_t write(int32_t fd, void * buf, int32_t n_bytes){
+int32_t write(int32_t fd, const void * buf, int32_t n_bytes){
       int32_t retval;
       asm volatile("          \n\
             PUSHL %%EBX       \n\
@@ -98,7 +110,7 @@ int32_t open(const uint8_t * filename){
             PUSHL %%EBX       \n\
             PUSHL %%ECX       \n\
             PUSHL %%EDX       \n\
-            MOVL 8(%EBP), %%EBX     \n\
+            MOVL 8(%%EBP), %%EBX     \n\
             MOVL $5, %%EAX    \n\
             INT $0x80         \n\
             POPL %%EDX        \n\
@@ -107,7 +119,7 @@ int32_t open(const uint8_t * filename){
             "
             :"=r" (retval)
       );
-      return retval
+      return retval;
 }
 
 int32_t close(int32_t fd){
@@ -116,7 +128,7 @@ int32_t close(int32_t fd){
             PUSHL %%EBX       \n\
             PUSHL %%ECX       \n\
             PUSHL %%EDX       \n\
-            MOVL 8(%EBP), %%EBX     \n\
+            MOVL 8(%%EBP), %%EBX     \n\
             MOVL $6, %%EAX    \n\
             INT $0x80         \n\
             POPL %%EDX        \n\
@@ -125,7 +137,7 @@ int32_t close(int32_t fd){
             "
             :"=r" (retval)
       );
-      return retval
+      return retval;
 }
 
 int32_t execute_handler(const uint8_t * command){
@@ -137,15 +149,61 @@ int32_t execute_handler(const uint8_t * command){
       // 5. Create PCB
       // 6. Context Switch
 
+      uint8_t cmd_name[CMD_MAX_LEN];     //Name of the command
+      dentry_t cmd_dentry;
+      int32_t cmd_inode;
+      int i;
+
+      uint8_t executable_data[40];
+      uint8_t x_magic[4] = {X_MAGIC_1, X_MAGIC_2, X_MAGIC_3, X_MAGIC_4};
+      void * entry_address;
+      void * physical_load_address;
+
+      PCB_t * pcb_array[MAX_CONCURRENT_TASKS] = {(PCB_t * )(2*_4MB - _4KB), (PCB_t *)(2*_4MB - _4KB - _4KB)};
+
       //
       //Step One : Parse
       //
 
+      //clear the cmd_len array
+      for(i = 0; i < CMD_MAX_LEN; i++){
+            cmd_name[i] = 0;
+      }
+
+      //grab the command
+      for(i = 0; (i < CMD_MAX_LEN) && (command[i] != ' '); i++){
+            cmd_name[i] = command[i];
+      }
+
+      //Begin searching for the file
+      //First get the dentry
+      if(read_dentry_by_name(cmd_name, &cmd_dentry)){
+            return -1;
+      }
+
+      //ensure what we're executing is a file
+      if(cmd_dentry.file_type != 2){
+            return -1;
+      }
+
+      //then get the inode number
+      cmd_inode = cmd_dentry.inode_num;
 
       //
       //Step Two : Executable Check
       //
 
+      //Grab the first 40 bytes (executable metadata)
+      file_read(cmd_inode, 0, executable_data, 40);
+
+      //Check the 4 magic numbers
+      for(i = 0; i < 4; i++){
+            if(executable_data[i] != x_magic[i]){
+                  return -2;
+            }
+      }
+
+      //grab the entry address of the program
 
       //
       //Step Three : Paging
@@ -301,10 +359,10 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
                   return write_handler((int32_t)arg1, (const void *)arg2, (int32_t)arg3);
             case 5:
                   //system open
-                  return open_handler((const uint8_t *)filename);
+                  return open_handler((const uint8_t *)arg1);
             case 6:
                   //system close
-                  return close_handler((int32_t)fd);
+                  return close_handler((int32_t)arg1);
             default:
                   return -2;
       }

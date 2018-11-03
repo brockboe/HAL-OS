@@ -3,7 +3,7 @@
 #include "structures.h"
 
 //execute a program file
-int32_t execute(const uint8_t * command){
+int32_t execute(const uint8_t * command);
 
 //read data from a file
 int32_t read(int32_t fd, void* buf, int32_t n_bytes);
