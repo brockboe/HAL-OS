@@ -2,9 +2,11 @@
 #include "filesys.h"
 #include "structures.h"
 
+//execute a program file
+int32_t execute(const uint8_t * command){
+
 //read data from a file
 int32_t read(int32_t fd, void* buf, int32_t n_bytes);
-int32_t read_handler(int32_t fd, void* buf, int32_t n_bytes);
 
 //write data into a file
 int32_t write(int32_t fd, const void * buf, int32_t n_bytes);

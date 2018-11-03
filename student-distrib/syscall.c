@@ -34,6 +34,24 @@ op_jmp_table_t rtc_op_table = { &rtc_open, &rtc_read, &rtc_write, &rtc_close };
 //virtual console jump table
 op_jmp_table_t vc_op_table = { &vc_open, &vc_read, &vc_write, &vc_close};
 
+int32_t execute(const uint8_t * command){
+      int32_t retval;
+      asm volatile("          \n\
+            PUSHL %%EBX       \n\
+            PUSHL %%ECX       \n\
+            PUSHL %%EDX       \n\
+            MOVL 8(%%EBP), %%EBX     \n\
+            MOVL $2, %%EAX    \n\
+            INT $0x80         \n\
+            POPL %%EDX        \n\
+            POPL %%ECX        \n\
+            POPL %%EBX        \n\
+            "
+            :"=r" (retval)
+      );
+      return retval;
+}
+
 int32_t read(int32_t fd, void * buf, int32_t n_bytes){
       int32_t retval;
       asm volatile("          \n\
@@ -108,6 +126,47 @@ int32_t close(int32_t fd){
             :"=r" (retval)
       );
       return retval
+}
+
+int32_t execute_handler(const uint8_t * command){
+      //Seven Steps:
+      // 1. Parse
+      // 2. Executable check
+      // 3. Paging
+      // 4. User - level program loader
+      // 5. Create PCB
+      // 6. Context Switch
+
+      //
+      //Step One : Parse
+      //
+
+
+      //
+      //Step Two : Executable Check
+      //
+
+
+      //
+      //Step Three : Paging
+      //
+
+
+      //
+      //Step Four : User level program loader
+      //
+
+
+      //
+      //Step Five : Create PCB
+      //
+
+
+      //
+      //Step Six : Context Switch
+      //
+
+      return 0;
 }
 
 /* read_handler
@@ -231,6 +290,9 @@ int32_t close_handler(int32_t fd){
 
 int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, uint32_t arg3){
       switch(syscall_num){
+            case 2:
+                  //system execute
+                  return execute_handler((const uint8_t *)arg1);
             case 3:
                   //system read
                   return read_handler((int32_t)arg1, (void *)arg2, (int32_t)arg3);
