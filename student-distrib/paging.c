@@ -1,14 +1,7 @@
 #include "types.h"
 #include "paging.h"
 
-#define PAGE_SIZE 1024 //the size of 4kB
-#define PAGING_SHIFT 12 //to get the MS20 bits out by shifting 12 bits right
-
-extern void init_control_reg();
-
-extern uint32_t paging_table[PAGE_SIZE];
-extern uint32_t directory_paging[PAGE_SIZE];
-
+extern void init_control_reg(uint32_t * CR3);
 
 
 /* init_paging function :
@@ -41,13 +34,13 @@ void init_paging(){
         //   set the paging base address to be the table we decleared earlier
           tmp.present = 1;
           tmp.wr = 1;
-          tmp.us = 1;
+          tmp.us = 0;
           tmp.write_through = 1;
           tmp.cached = 0;
           tmp.accessed = 0;
           tmp.paddling = 0;
           tmp.page_size = 0;
-          tmp.g =0;
+          tmp.g = 1;
           tmp.available = 0;
           tmp.table_base_addr = ((uint32_t)paging_table >> PAGING_SHIFT);
           directory_paging[0] = (uint32_t) tmp.val; //add entry to the pd.
@@ -65,7 +58,7 @@ void init_paging(){
         //   set the paging base address to be the video memory 0xB8
          temp.present = 1;
          temp.wr = 1;
-         temp.us = 1;
+         temp.us = 0;
          temp.write_through = 1;
          temp.cached = 0;
          temp.accessed = 0;
@@ -95,14 +88,14 @@ void init_paging(){
           temp_kernel.accessed = 0;
           temp_kernel.paddling = 0;
           temp_kernel.page_size = 1;
-          temp_kernel.g = 0;
+          temp_kernel.g = 1;
           temp_kernel.available = 0;
           temp_kernel.pat = 0;
           temp_kernel.reserved = 0;
           temp_kernel.page_base_addr = 1;
           directory_paging[1] = (uint32_t) temp_kernel.val;
 
-          init_control_reg();
+          init_control_reg(directory_paging);
 
       return;
 }

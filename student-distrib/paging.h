@@ -2,6 +2,9 @@
 #ifndef _PAGING_H
 #define _PAGING_H
 
+#define PAGE_SIZE 1024 //the size of 4kB
+#define PAGING_SHIFT 12 //to get the MS20 bits out by shifting 12 bits right
+
 /* This is a page directory entry for page table.  It goes in the Page Directory . */
 typedef struct page_directory_entry_4kb  {
     union {
@@ -64,6 +67,28 @@ typedef struct page_table_entry {
     };
 } page_table_entry_t;
 
+typedef struct page_directory {
+      uint32_t PDE[1024];
+} page_directory_t;
+
+extern uint32_t paging_table[PAGE_SIZE];
+extern uint32_t directory_paging[PAGE_SIZE];
+
+
 void init_paging();
+
+extern void init_control_reg(uint32_t * CR3);
+
+void wipe_pde(uint32_t * pde);
+
+void install_pde_entry_4kb(uint32_t * pde, uint32_t phys_addr, uint32_t virt_addr, uint32_t us);
+
+void install_pde_entry_4mb(uint32_t * pde, uint32_t phys_addr, uint32_t virt_addr, uint32_t us);
+
+void wipe_pte(uint32_t * pte);
+
+void install_pte_entry(uint32_t * pte, uint32_t phys_addr, uint32_t virt_addr, uint32_t us);
+
+void set_cr3(void * pd);
 
 #endif  /* _PAGING_H */

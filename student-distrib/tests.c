@@ -361,7 +361,7 @@ void launch_tests(){
 	TEST_OUTPUT("paging_test", paging_test());
 
 	/*Tun all the driver tests*/
-	driver_test();
+	execute((uint8_t *)"shell");
 
 	return;
 }

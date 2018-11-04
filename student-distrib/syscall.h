@@ -1,6 +1,10 @@
 #include "types.h"
 #include "filesys.h"
 #include "structures.h"
+#include "paging.h"
+
+#define PAGE_SIZE 1024
+#define PAGING_SHIFT 12
 
 //execute a program file
 int32_t execute(const uint8_t * command);

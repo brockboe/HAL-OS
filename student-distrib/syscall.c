@@ -1,10 +1,13 @@
+#include "x86_desc.h"
 #include "filesys.h"
 #include "types.h"
 #include "lib.h"
-#include "syscall.h"
 #include "vc.h"
 #include "rtc.h"
 #include "structures.h"
+#include "paging.h"
+#include "syscall.h"
+
 
 #define CMD_MAX_LEN 32
 #define METADATA_LEN 40
@@ -12,9 +15,21 @@
 #define X_MAGIC_2 0x45
 #define X_MAGIC_3 0x4C
 #define X_MAGIC_4 0x46
-#define MAX_CONCURRENT_TASKS
-#define _4MB 4194304
-#define _4KB 4096
+#define MAX_CONCURRENT_TASKS 2
+#define MAX_FS 1023*4096
+#define VIDMEM 0x000B8000
+#define PROG_OFFSET 0x48000
+#define _4MB 0x400000
+#define _8MB 0x800000
+#define _128MB 0x8000000
+#define _4KB 0x1000
+#define _8KB 0x2000
+
+#define USER_STACK_BEGIN 0x8400000 - 4
+
+static page_directory_t task_pd[MAX_CONCURRENT_TASKS] __attribute__((aligned (_4KB)));
+static PCB_t * task_pcb[6] = {(PCB_t *)(_8MB - 1 * _8KB),
+                              (PCB_t *)(_8MB - 2 * _8KB)};
 
 PCB_t test_pcb;
 
@@ -149,17 +164,23 @@ int32_t execute_handler(const uint8_t * command){
       // 5. Create PCB
       // 6. Context Switch
 
+      //Vars for Parsing
       uint8_t cmd_name[CMD_MAX_LEN];     //Name of the command
       dentry_t cmd_dentry;
       int32_t cmd_inode;
       int i;
 
-      uint8_t executable_data[40];
+      //vars for executable check
+      uint8_t exe_dat[40];
       uint8_t x_magic[4] = {X_MAGIC_1, X_MAGIC_2, X_MAGIC_3, X_MAGIC_4};
       void * entry_address;
-      void * physical_load_address;
 
-      PCB_t * pcb_array[MAX_CONCURRENT_TASKS] = {(PCB_t * )(2*_4MB - _4KB), (PCB_t *)(2*_4MB - _4KB - _4KB)};
+      //vars for paging setup
+      int PID;
+      int PDE_index;
+
+      //vars for context switch
+      void * user_sp;
 
       //
       //Step One : Parse
@@ -194,35 +215,105 @@ int32_t execute_handler(const uint8_t * command){
       //
 
       //Grab the first 40 bytes (executable metadata)
-      file_read(cmd_inode, 0, executable_data, 40);
+      file_read(cmd_inode, 0, exe_dat, 40);
 
       //Check the 4 magic numbers
       for(i = 0; i < 4; i++){
-            if(executable_data[i] != x_magic[i]){
+            if(exe_dat[i] != x_magic[i]){
                   return -2;
             }
       }
 
       //grab the entry address of the program
+      entry_address = (void *)((exe_dat[27] << 24)|(exe_dat[26] << 16)|(exe_dat[25] << 8)|(exe_dat[24]));
 
       //
       //Step Three : Paging
       //
 
+      //find the first available PCB
+      for(i = 0; i < MAX_CONCURRENT_TASKS; i++){
+            if(!task_pcb[i]->is_active){
+                  PID = i;
+                  break;
+            }
+      }
+
+      //set up the paging
+      //set up the vid mem
+      task_pd[PID].PDE[0] = directory_paging[0];
+      //set up the kernel mem
+      task_pd[PID].PDE[1] = directory_paging[1];
+      //set up the program's 4mb page
+      PDE_index = (int)(_128MB >> 22);
+      page_directory_entry_4mb_t temp_pde;
+      temp_pde.page_base_addr = (uint32_t)((_8MB + PID * _4MB) >> 22);
+      temp_pde.present = 1;
+      temp_pde.wr = 1;
+      temp_pde.us = 1;
+      temp_pde.write_through = 1;
+      temp_pde.cached = 1;
+      temp_pde.accessed = 0;
+      temp_pde.paddling = 0;
+      temp_pde.page_size = 1;
+      temp_pde.g = 0;
+      temp_pde.available = 0;
+      temp_pde.pat = 0;
+      temp_pde.reserved = 0;
+
+      task_pd[PID].PDE[PDE_index] = (uint32_t)temp_pde.val;
+      //set the CR3 register to match the new setup
+      init_control_reg(&(task_pd[PID].PDE[0]));
 
       //
       //Step Four : User level program loader
       //
 
+      read_data(cmd_inode, 0, (uint8_t *)(_128MB + PROG_OFFSET), MAX_FS);
 
       //
       //Step Five : Create PCB
       //
 
+      task_pcb[PID]->PID = PID;
+      task_pcb[PID]->is_active = 1;
+      //set the fd's as empty
+      task_pcb[PID]->fd[0].flags.in_use = 1;
+      task_pcb[PID]->fd[1].flags.in_use = 1;
+      task_pcb[PID]->fd[2].flags.in_use = 0;
+      task_pcb[PID]->fd[3].flags.in_use = 0;
+      task_pcb[PID]->fd[4].flags.in_use = 0;
+      task_pcb[PID]->fd[5].flags.in_use = 0;
+
 
       //
       //Step Six : Context Switch
       //
+
+      user_sp = (void *)(_128MB + _4MB - 4);
+
+      //set up the TSS
+      tss.ss0 =  KERNEL_DS;
+      tss.esp0 = _8MB - (PID * _8KB) - 4;
+
+      //lower the privilege level using IRET
+      asm volatile("                \n\
+            cli                     \n\
+            MOVW %0, %%AX           \n\
+            MOVW %%AX, %%DS         \n\
+            PUSHL %0                \n\
+            PUSHL %1                \n\
+            PUSHFL                  \n\
+            POPL %%EAX              \n\
+            ORL $0x0200, %%EAX      \n\
+            PUSHL %%EAX             \n\
+            PUSHL %2                \n\
+            PUSHL %3                \n\
+            IRET                    \n\
+            "
+            :
+            :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)
+      );
 
       return 0;
 }
