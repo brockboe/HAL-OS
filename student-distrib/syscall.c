@@ -175,6 +175,7 @@ int32_t execute_handler(const uint8_t * command){
       dentry_t cmd_dentry;
       int32_t cmd_inode;
       int i;
+      int cmd_len;
 
       //vars for executable check
       uint8_t exe_dat[40];
@@ -198,7 +199,7 @@ int32_t execute_handler(const uint8_t * command){
       }
 
       //grab the command
-      for(i = 0; (i < CMD_MAX_LEN) && (command[i] != ' '); i++){
+      for(i = 0; (i < CMD_MAX_LEN) && (command[i] != ' ') && (command[i] != '\n'); i++){
             cmd_name[i] = command[i];
       }
 

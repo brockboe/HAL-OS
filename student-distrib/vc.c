@@ -83,6 +83,8 @@ int32_t vc_write(int32_t fd, const void * buf, int32_t n_bytes){
 
 int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t bytes){
 
+      int chars_written = 0;
+
     if(buf == NULL)
         return -1;
     int i;
@@ -94,10 +96,11 @@ int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t b
 
     for(i = 0; i < bytes; i++){
         buffer[i] = vc_buffer[i];
+        chars_written++;
     }
 
     clr_buf();
-    return 0;
+    return chars_written;
 }
 
 /*

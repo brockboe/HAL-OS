@@ -24,7 +24,6 @@ common_interrupt:
       #PUSHL IRQ number
 
       #Save all the Registers
-      cli
       PUSHW %FS
       PUSHW $0
       PUSHW %ES
@@ -64,8 +63,6 @@ common_interrupt:
       POPW %FS
       #Pop off the argument
       ADDL $4, %ESP
-
-      sti
 
       IRET
 

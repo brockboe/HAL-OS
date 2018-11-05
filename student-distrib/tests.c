@@ -327,9 +327,6 @@ int driver_test(){
 
 	retval = read(0, (void *)temp, 1);
 
-	//run the RTC test
-	RTC_IO();
-
 	retval = read(0, (void *)temp, 1);
 
 	//print the contents of the 10th file in the directory index
@@ -363,6 +360,9 @@ void launch_tests(){
 	clear_term();
 
 	/*Tun all the driver tests*/
+	//driver_test();
+
+	fill_color();
 	execute((uint8_t *)"shell");
 
 	return;
