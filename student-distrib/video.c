@@ -24,6 +24,7 @@ void vid_init(){
             display[i].highbits = RED;
       }
 
+      fill_color();
       return;
 }
 

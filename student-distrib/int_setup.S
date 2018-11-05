@@ -24,6 +24,7 @@ common_interrupt:
       #PUSHL IRQ number
 
       #Save all the Registers
+      cli
       PUSHW %FS
       PUSHW $0
       PUSHW %ES
@@ -37,6 +38,12 @@ common_interrupt:
       PUSHL %EDX
       PUSHL %ECX
       PUSHL %EBX
+
+      #Switch to the kernel DS
+      PUSHL %EAX
+      MOVW $0x18, %AX
+      MOVW %AX, %DS
+      POPL %EAX
 
       #Call the dispatcher so we're now working in C
       CALL C_int_dispatcher
@@ -57,6 +64,8 @@ common_interrupt:
       POPW %FS
       #Pop off the argument
       ADDL $4, %ESP
+
+      sti
 
       IRET
 

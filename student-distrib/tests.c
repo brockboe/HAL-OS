@@ -360,6 +360,8 @@ void launch_tests(){
 	/* paging_test */
 	TEST_OUTPUT("paging_test", paging_test());
 
+	clear_term();
+
 	/*Tun all the driver tests*/
 	execute((uint8_t *)"shell");
 

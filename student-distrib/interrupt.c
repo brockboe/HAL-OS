@@ -167,7 +167,8 @@ void install_trap_entry(int idt_offset, void handler()){
       idt[idt_offset].reserved0 = 0;
       idt[idt_offset].size = 1;
       idt[idt_offset].present = 1;
-      idt[idt_offset].dpl = 0;
+      //set the DPL to 3 so user programs can call it
+      idt[idt_offset].dpl = 3;
 }
 
 /*install_handler automates the process of putting a function

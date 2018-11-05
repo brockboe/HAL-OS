@@ -7,6 +7,7 @@
 #include "structures.h"
 #include "paging.h"
 #include "syscall.h"
+#include "video.h"
 
 
 #define CMD_MAX_LEN 32
@@ -32,6 +33,8 @@ static PCB_t * task_pcb[6] = {(PCB_t *)(_8MB - 1 * _8KB),
                               (PCB_t *)(_8MB - 2 * _8KB)};
 
 PCB_t test_pcb;
+
+extern void context_switch(long user_ds, long user_sp, long user_cs, long entry_addr);
 
 //general format for device-specific io:
 //open(const uint8_t * filename)
@@ -156,6 +159,9 @@ int32_t close(int32_t fd){
 }
 
 int32_t execute_handler(const uint8_t * command){
+
+      cli();
+
       //Seven Steps:
       // 1. Parse
       // 2. Executable check
@@ -279,7 +285,9 @@ int32_t execute_handler(const uint8_t * command){
       task_pcb[PID]->is_active = 1;
       //set the fd's as empty
       task_pcb[PID]->fd[0].flags.in_use = 1;
+      task_pcb[PID]->fd[0].actions = &vc_op_table;
       task_pcb[PID]->fd[1].flags.in_use = 1;
+      task_pcb[PID]->fd[1].actions = &vc_op_table;
       task_pcb[PID]->fd[2].flags.in_use = 0;
       task_pcb[PID]->fd[3].flags.in_use = 0;
       task_pcb[PID]->fd[4].flags.in_use = 0;
@@ -296,24 +304,26 @@ int32_t execute_handler(const uint8_t * command){
       tss.ss0 =  KERNEL_DS;
       tss.esp0 = _8MB - (PID * _8KB) - 4;
 
-      //lower the privilege level using IRET
-      asm volatile("                \n\
-            cli                     \n\
-            MOVW %0, %%AX           \n\
-            MOVW %%AX, %%DS         \n\
-            PUSHL %0                \n\
-            PUSHL %1                \n\
-            PUSHFL                  \n\
-            POPL %%EAX              \n\
-            ORL $0x0200, %%EAX      \n\
-            PUSHL %%EAX             \n\
-            PUSHL %2                \n\
-            PUSHL %3                \n\
-            IRET                    \n\
-            "
-            :
-            :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)
-      );
+      sti();
+
+            //lower the privilege level using IRET
+            asm volatile("                \n\
+                  MOVW %0, %%AX           \n\
+                  MOVW %%AX, %%DS         \n\
+                  PUSHL %0                \n\
+                  PUSHL %1                \n\
+                  PUSHFL                  \n\
+                  POPL %%EAX              \n\
+                  ORL $0x200, %%EAX       \n\
+                  PUSHL %%EAX             \n\
+                  PUSHL %2                \n\
+                  PUSHL %3                \n\
+                  IRET                    \n\
+                  "
+                  :
+                  :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)
+                  :"%eax"
+            );
 
       return 0;
 }
@@ -439,6 +449,8 @@ int32_t close_handler(int32_t fd){
 
 int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, uint32_t arg3){
       switch(syscall_num){
+            case 1:
+                  asm volatile (".1: hlt; jmp .1;");
             case 2:
                   //system execute
                   return execute_handler((const uint8_t *)arg1);
@@ -448,6 +460,7 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
             case 4:
                   //system write
                   return write_handler((int32_t)arg1, (const void *)arg2, (int32_t)arg3);
+                  fill_color();
             case 5:
                   //system open
                   return open_handler((const uint8_t *)arg1);
