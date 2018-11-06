@@ -8,6 +8,9 @@
 vid_data_t * display;
 terminal_info_t tinfo;
 
+void move_cursor();
+void enable_cursor();
+
 /* vid_init
  * Description : initialize the terminal display  -- red as default
  * Input : none
@@ -19,12 +22,16 @@ void vid_init(){
       int i;
       display = (vid_data_t *)VIDMEM;
       tinfo.offset = 0;
+      tinfo.cursor_start = 0;
+      tinfo.cursor_end = 15;
       //Write the color information into the video memory.
       for(i = 0; i < MAXCHAR; i++){
             display[i].highbits = RED;
       }
 
       fill_color();
+      enable_cursor();
+      move_cursor();
       return;
 }
 
@@ -61,6 +68,7 @@ void clear_term(){
       //set the cursor back to 0.
       tinfo.offset = 0;
       return;
+      move_cursor();
 }
 
 /* scroll_term
@@ -83,6 +91,7 @@ void scroll_term(){
       for(i = TERMWIDTH * (TERMHEIGHT - 1); i < MAXCHAR; i++){
             display[i].character = 0;
       }
+      move_cursor();
 }
 
 /* print_term
@@ -115,6 +124,7 @@ void print_term(uint8_t * string, int length){
                   tinfo.offset++;
             }
       }
+      move_cursor();
 }
 
 /* printchar_term
@@ -137,13 +147,14 @@ void printchar_term(char a){
       if(a == '\n'){
             tinfo.offset -= tinfo.offset % TERMWIDTH;
             tinfo.offset += TERMWIDTH;
+            move_cursor();
       }
       //otherwise print the character
       else{
             display[tinfo.offset].character = a;
             tinfo.offset++;
-            return;
       }
+      move_cursor();
 }
 
 /* backspace
@@ -159,6 +170,7 @@ void backspace(){
             tinfo.offset = 0;
       }
       display[tinfo.offset].character = 0;
+      move_cursor();
       return;
 }
 
@@ -179,7 +191,7 @@ void tab(){
       else{
             tinfo.offset = tinfo.offset + 10;
       }
-
+      move_cursor();
       return;
 }
 
@@ -196,6 +208,7 @@ void set_term_x(uint32_t x){
       }
       tinfo.offset -= tinfo.offset % TERMWIDTH;
       tinfo.offset += x;
+      move_cursor();
       return;
 }
 
@@ -231,3 +244,24 @@ void print_num(int x){
 
       return;
 }
+
+/*
+ move_cursor
+ This program was inspired by the resources available
+ on the osdev.org wiki
+ */
+ void move_cursor(){
+       uint32_t pos = tinfo.offset;
+       outb(0x0F, 0x3D4);
+       outb((uint8_t)(pos & 0xFF), 0x3D5);
+       outb(0x0E, 0x3D4);
+       outb((uint8_t)((pos >> 8)&0xFF), 0x3D5);
+ }
+
+ void enable_cursor(){
+       outb(0x0A, 0x3D4);
+       outb((inb(0x3D5) & 0xC0) | tinfo.cursor_start, 0x3D5);
+
+      outb(0x3D4, 0x0B);
+      outb((inb(0x3D5) & 0xE0) | tinfo.cursor_end, 0x3D5);
+ }

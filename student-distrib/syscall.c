@@ -183,7 +183,7 @@ int32_t execute_handler(const uint8_t * command){
       void * entry_address;
 
       //vars for paging setup
-      int PID;
+      int PID = -1;
       int PDE_index;
 
       //vars for context switch
@@ -244,6 +244,11 @@ int32_t execute_handler(const uint8_t * command){
                   PID = i;
                   break;
             }
+      }
+
+      //Check that there was room for that program
+      if(PID == -1){
+            return -1;
       }
 
       //set up the paging

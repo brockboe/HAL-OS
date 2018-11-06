@@ -16,6 +16,8 @@ typedef struct vid_data {
 /* struct containing offset of terminal display */
 typedef struct terminal_info {
       uint32_t offset;
+      uint8_t cursor_start;
+      uint8_t cursor_end;
 } terminal_info_t;
 
 void vid_init();                               /* initialization of video display     */
