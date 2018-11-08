@@ -68,6 +68,10 @@ typedef struct PCB {
       file_descriptor_t fd[8];
       uint8_t is_active;
       int32_t PID;
+      uint32_t ss0;
+      uint32_t esp0;
+      uint32_t stack_pointer;
+      struct PCB * parent_pcb;
 } PCB_t;
 
 #endif

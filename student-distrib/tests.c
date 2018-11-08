@@ -7,6 +7,7 @@
 #include "syscall.h"
 #include "vc.h"
 #include "video.h"
+#include "syscall-lib.h"
 
 #define PASS 1
 #define FAIL 0

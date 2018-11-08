@@ -64,101 +64,6 @@ op_jmp_table_t rtc_op_table = { &rtc_open, &rtc_read, &rtc_write, &rtc_close };
 //virtual console jump table
 op_jmp_table_t vc_op_table = { &vc_open, &vc_read, &vc_write, &vc_close};
 
-
-int32_t execute(const uint8_t * command){
-      int32_t retval;
-      asm volatile("          \n\
-            PUSHL %%EBX       \n\
-            PUSHL %%ECX       \n\
-            PUSHL %%EDX       \n\
-            MOVL 8(%%EBP), %%EBX     \n\
-            MOVL $2, %%EAX    \n\
-            INT $0x80         \n\
-            POPL %%EDX        \n\
-            POPL %%ECX        \n\
-            POPL %%EBX        \n\
-            "
-            :"=r" (retval)
-      );
-      return retval;
-}
-
-int32_t read(int32_t fd, void * buf, int32_t n_bytes){
-      int32_t retval;
-      asm volatile("          \n\
-            PUSHL %%EBX       \n\
-            PUSHL %%ECX       \n\
-            PUSHL %%EDX       \n\
-            MOVL 8(%%EBP), %%EBX     \n\
-            MOVL 12(%%EBP), %%ECX    \n\
-            MOVL 16(%%EBP), %%EDX    \n\
-            MOVL $3, %%EAX    \n\
-            INT $0x80         \n\
-            POPL %%EDX        \n\
-            POPL %%ECX        \n\
-            POPL %%EBX        \n\
-            "
-            :"=r" (retval)
-      );
-      return retval;
-}
-
-int32_t write(int32_t fd, const void * buf, int32_t n_bytes){
-      int32_t retval;
-      asm volatile("          \n\
-            PUSHL %%EBX       \n\
-            PUSHL %%ECX       \n\
-            PUSHL %%EDX       \n\
-            MOVL 8(%%EBP), %%EBX     \n\
-            MOVL 12(%%EBP), %%ECX    \n\
-            MOVL 16(%%EBP), %%EDX    \n\
-            MOVL $4, %%EAX    \n\
-            INT $0x80         \n\
-            POPL %%EDX        \n\
-            POPL %%ECX        \n\
-            POPL %%EBX        \n\
-            "
-            :"=r" (retval)
-            );
-      return retval;
-}
-
-int32_t open(const uint8_t * filename){
-      int32_t retval;
-      asm volatile("          \n\
-            PUSHL %%EBX       \n\
-            PUSHL %%ECX       \n\
-            PUSHL %%EDX       \n\
-            MOVL 8(%%EBP), %%EBX     \n\
-            MOVL $5, %%EAX    \n\
-            INT $0x80         \n\
-            POPL %%EDX        \n\
-            POPL %%ECX        \n\
-            POPL %%EBX        \n\
-            "
-            :"=r" (retval)
-      );
-      return retval;
-}
-
-int32_t close(int32_t fd){
-      int32_t retval;
-      asm volatile("          \n\
-            PUSHL %%EBX       \n\
-            PUSHL %%ECX       \n\
-            PUSHL %%EDX       \n\
-            MOVL 8(%%EBP), %%EBX     \n\
-            MOVL $6, %%EAX    \n\
-            INT $0x80         \n\
-            POPL %%EDX        \n\
-            POPL %%ECX        \n\
-            POPL %%EBX        \n\
-            "
-            :"=r" (retval)
-      );
-      return retval;
-}
-
 PCB_t * get_pcb_ptr(){
       PCB_t * pcb;
       asm volatile("                \n\
@@ -171,6 +76,47 @@ PCB_t * get_pcb_ptr(){
             :"%eax"
       );
       return pcb;
+}
+
+int32_t halt_handler(uint8_t status){
+      PCB_t * current_pcb;
+      cli();
+      current_pcb = get_pcb_ptr();
+
+      //Set all the file descriptors to open
+      task_pcb[current_pcb->PID]->fd[0].flags.in_use = 0;
+      task_pcb[current_pcb->PID]->fd[1].flags.in_use = 0;
+      task_pcb[current_pcb->PID]->fd[2].flags.in_use = 0;
+      task_pcb[current_pcb->PID]->fd[3].flags.in_use = 0;
+      task_pcb[current_pcb->PID]->fd[4].flags.in_use = 0;
+      task_pcb[current_pcb->PID]->fd[5].flags.in_use = 0;
+      task_pcb[current_pcb->PID]->fd[6].flags.in_use = 0;
+      task_pcb[current_pcb->PID]->fd[7].flags.in_use = 0;
+
+      //restore the TSS
+      tss.ss0 = current_pcb->parent_pcb->ss0;
+      tss.esp0 = current_pcb->parent_pcb->esp0;
+
+      //set the process as inactive
+      current_pcb->is_active = 0;
+
+      //Reset the paging to the parent's page
+      init_control_reg(&(task_pd[current_pcb->parent_pcb->PID].PDE[0]));
+
+      sti();
+
+      //jump to the end of the execute function and return our value
+      asm volatile("                \n\
+            MOVL %0, %%EAX          \n\
+            JMP execute_return      \n\
+            "
+            :
+            :"g"(status), "g"(task_pcb[current_pcb->parent_pcb->PID]->stack_pointer)
+      );
+
+      //we shouldn't get here because of the JMP instruction
+      return -1;
+
 }
 
 int32_t execute_handler(const uint8_t * command){
@@ -202,6 +148,9 @@ int32_t execute_handler(const uint8_t * command){
 
       //vars for context switch
       void * user_sp;
+
+      //vars for return value
+      int32_t retval = 0;
 
       //
       //Step One : Parse
@@ -303,6 +252,7 @@ int32_t execute_handler(const uint8_t * command){
 
       task_pcb[PID]->PID = PID;
       task_pcb[PID]->is_active = 1;
+      task_pcb[PID]->parent_pcb = get_pcb_ptr();
       //set the fd's as empty
       task_pcb[PID]->fd[0].flags.in_use = 1;
       task_pcb[PID]->fd[0].actions = &vc_op_table;
@@ -330,24 +280,28 @@ int32_t execute_handler(const uint8_t * command){
 
             //lower the privilege level using IRET
             asm volatile("                \n\
-                  MOVW %0, %%AX           \n\
+                  MOVW %2, %%AX           \n\
                   MOVW %%AX, %%DS         \n\
-                  PUSHL %0                \n\
-                  PUSHL %1                \n\
+                  PUSHL %2                \n\
+                  PUSHL %3                \n\
                   PUSHFL                  \n\
                   POPL %%EAX              \n\
                   ORL $0x200, %%EAX       \n\
                   PUSHL %%EAX             \n\
-                  PUSHL %2                \n\
-                  PUSHL %3                \n\
+                  PUSHL %4                \n\
+                  PUSHL %5                \n\
+                  MOVL %%ESP, %%EAX       \n\
+                  MOVL %%EAX, %1          \n\
                   IRET                    \n\
+                  execute_return:         \n\
+                  MOVL %%EAX, %0          \n\
                   "
-                  :
+                  : "=g"(retval), "=g"(task_pcb[PID]->stack_pointer)
                   :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)
                   :"%eax"
             );
 
-      return 0;
+      return retval;
 }
 
 
@@ -502,7 +456,8 @@ int32_t close_handler(int32_t fd){
 int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, uint32_t arg3){
       switch(syscall_num){
             case 1:
-                  asm volatile (".1: hlt; jmp .1;");
+                  //system halt
+                  return halt_handler((uint8_t)arg1);
             case 2:
                   //system execute
                   return execute_handler((const uint8_t *)arg1);
