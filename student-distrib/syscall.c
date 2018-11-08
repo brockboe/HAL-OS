@@ -69,7 +69,7 @@ PCB_t * get_pcb_ptr(){
       asm volatile("                \n\
             MOVL %%ESP, %%EAX       \n\
             ANDL %1, %%EAX          \n\
-            MOVL %%EAX, %0             \n\
+            MOVL %%EAX, %0          \n\
             "
             :"=r"(pcb)
             :"g"(_8KB_MASK)
@@ -108,10 +108,12 @@ int32_t halt_handler(uint8_t status){
       //jump to the end of the execute function and return our value
       asm volatile("                \n\
             MOVL %0, %%EAX          \n\
+            MOVL %1, %%ESP          \n\
             JMP execute_return      \n\
             "
             :
             :"g"(status), "g"(task_pcb[current_pcb->parent_pcb->PID]->stack_pointer)
+            :"%eax"
       );
 
       //we shouldn't get here because of the JMP instruction
@@ -282,6 +284,7 @@ int32_t execute_handler(const uint8_t * command){
             asm volatile("                \n\
                   MOVW %2, %%AX           \n\
                   MOVW %%AX, %%DS         \n\
+                  PUSHL %%EBP             \n\
                   PUSHL %2                \n\
                   PUSHL %3                \n\
                   PUSHFL                  \n\
@@ -290,11 +293,11 @@ int32_t execute_handler(const uint8_t * command){
                   PUSHL %%EAX             \n\
                   PUSHL %4                \n\
                   PUSHL %5                \n\
-                  MOVL %%ESP, %%EAX       \n\
-                  MOVL %%EAX, %1          \n\
+                  MOVL %%ESP, %1          \n\
                   IRET                    \n\
                   execute_return:         \n\
                   MOVL %%EAX, %0          \n\
+                  POPL %%EBP              \n\
                   "
                   : "=g"(retval), "=g"(task_pcb[PID]->stack_pointer)
                   :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)

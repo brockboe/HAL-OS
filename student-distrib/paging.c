@@ -40,7 +40,7 @@ void init_paging(){
           tmp.accessed = 0;
           tmp.paddling = 0;
           tmp.page_size = 0;
-          tmp.g = 1;
+          tmp.g = 0;
           tmp.available = 0;
           tmp.table_base_addr = ((uint32_t)paging_table >> PAGING_SHIFT);
           directory_paging[0] = (uint32_t) tmp.val; //add entry to the pd.
@@ -64,7 +64,7 @@ void init_paging(){
          temp.accessed = 0;
          temp.dirty = 0;
          temp.pat = 0;
-         temp.global = 1;
+         temp.global = 0;
          temp.available = 0;
          temp.physical_page_addr = (0x000B8);
          paging_table[0xB8] = (uint32_t)temp.val;
@@ -88,7 +88,7 @@ void init_paging(){
           temp_kernel.accessed = 0;
           temp_kernel.paddling = 0;
           temp_kernel.page_size = 1;
-          temp_kernel.g = 1;
+          temp_kernel.g = 0;
           temp_kernel.available = 0;
           temp_kernel.pat = 0;
           temp_kernel.reserved = 0;
