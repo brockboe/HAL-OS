@@ -71,6 +71,7 @@ typedef struct PCB {
       uint32_t ss0;
       uint32_t esp0;
       uint32_t stack_pointer;
+      uint32_t EBP;
       struct PCB * parent_pcb;
 } PCB_t;
 

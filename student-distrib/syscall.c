@@ -35,8 +35,6 @@ static PCB_t * task_pcb[6] = {(PCB_t *)(_8MB - 1 * _8KB),
 
 PCB_t test_pcb;
 
-extern void context_switch(long user_ds, long user_sp, long user_cs, long entry_addr);
-
 //general format for device-specific io:
 //open(const uint8_t * filename)
 //read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes)
@@ -107,12 +105,13 @@ int32_t halt_handler(uint8_t status){
 
       //jump to the end of the execute function and return our value
       asm volatile("                \n\
-            MOVL %0, %%EAX          \n\
-            MOVL %1, %%ESP          \n\
+            MOVL %1, %%EBP          \n\
+            XORL %%EAX, %%EAX       \n\
+            MOVB %0, %%AL          \n\
             JMP execute_return      \n\
             "
             :
-            :"g"(status), "g"(task_pcb[current_pcb->parent_pcb->PID]->stack_pointer)
+            :"r"(status), "g"(current_pcb->parent_pcb->EBP)
             :"%eax"
       );
 
@@ -150,9 +149,6 @@ int32_t execute_handler(const uint8_t * command){
 
       //vars for context switch
       void * user_sp;
-
-      //vars for return value
-      int32_t retval = 0;
 
       //
       //Step One : Parse
@@ -255,6 +251,7 @@ int32_t execute_handler(const uint8_t * command){
       task_pcb[PID]->PID = PID;
       task_pcb[PID]->is_active = 1;
       task_pcb[PID]->parent_pcb = get_pcb_ptr();
+
       //set the fd's as empty
       task_pcb[PID]->fd[0].flags.in_use = 1;
       task_pcb[PID]->fd[0].actions = &vc_op_table;
@@ -267,6 +264,15 @@ int32_t execute_handler(const uint8_t * command){
       task_pcb[PID]->fd[6].flags.in_use = 0;
       task_pcb[PID]->fd[7].flags.in_use = 0;
 
+      //set the parent EBP
+      asm volatile("                \n\
+            MOVL %%EBP, %0          \n\
+            "
+            : "=r"(task_pcb[PID]->parent_pcb->EBP)
+      );
+
+      task_pcb[PID]->parent_pcb->ss0 = tss.ss0;
+      task_pcb[PID]->parent_pcb->esp0 = tss.esp0;
 
       //
       //Step Six : Context Switch
@@ -275,36 +281,35 @@ int32_t execute_handler(const uint8_t * command){
       user_sp = (void *)(_128MB + _4MB - 4);
 
       //set up the TSS
+
       tss.ss0 =  KERNEL_DS;
       tss.esp0 = _8MB - (PID * _8KB) - 4;
 
-      sti();
+            sti();
 
-            //lower the privilege level using IRET
-            asm volatile("                \n\
-                  MOVW %2, %%AX           \n\
-                  MOVW %%AX, %%DS         \n\
-                  PUSHL %%EBP             \n\
-                  PUSHL %2                \n\
-                  PUSHL %3                \n\
-                  PUSHFL                  \n\
-                  POPL %%EAX              \n\
-                  ORL $0x200, %%EAX       \n\
-                  PUSHL %%EAX             \n\
-                  PUSHL %4                \n\
-                  PUSHL %5                \n\
-                  MOVL %%ESP, %1          \n\
-                  IRET                    \n\
-                  execute_return:         \n\
-                  MOVL %%EAX, %0          \n\
-                  POPL %%EBP              \n\
-                  "
-                  : "=g"(retval), "=g"(task_pcb[PID]->stack_pointer)
-                  :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)
-                  :"%eax"
-            );
+                  //lower the privilege level using IRET
+                  asm volatile("                \n\
+                        MOVW %2, %%AX           \n\
+                        MOVW %%AX, %%DS         \n\
+                        PUSHL %0                \n\
+                        PUSHL %1                \n\
+                        PUSHFL                  \n\
+                        POPL %%EAX              \n\
+                        ORL $0x200, %%EAX       \n\
+                        PUSHL %%EAX             \n\
+                        PUSHL %2                \n\
+                        PUSHL %3                \n\
+                        IRET                    \n\
+                        execute_return:         \n\
+                        LEAVE                   \n\
+                        RET                     \n\
+                        "
+                        :
+                        :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)
+                        :"%eax"
+                  );
 
-      return retval;
+      return -1;
 }
 
 
