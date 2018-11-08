@@ -275,9 +275,8 @@ void enter_pressed(){
  */
 
 void backspace_pressed(){
-      /*if nothing is in the keyboard buffer, only call delete video buffer */
+      /*if nothing is in the keyboard buffer, return */
       if(next_available == 0){
-            backspace();
             return;
       }
       /*if there are things in the keyboard buffer, delete it and call the video buffer */
