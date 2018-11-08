@@ -25,6 +25,7 @@
 #define _128MB 0x8000000
 #define _4KB 0x1000
 #define _8KB 0x2000
+#define _8KB_MASK 0xFFFFE000
 
 #define USER_STACK_BEGIN 0x8400000 - 4
 
@@ -158,6 +159,20 @@ int32_t close(int32_t fd){
       return retval;
 }
 
+PCB_t * get_pcb_ptr(){
+      PCB_t * pcb;
+      asm volatile("                \n\
+            MOVL %%ESP, %%EAX       \n\
+            ANDL %1, %%EAX          \n\
+            MOVL %%EAX, %0             \n\
+            "
+            :"=r"(pcb)
+            :"g"(_8KB_MASK)
+            :"%eax"
+      );
+      return pcb;
+}
+
 int32_t execute_handler(const uint8_t * command){
 
       cli();
@@ -175,7 +190,6 @@ int32_t execute_handler(const uint8_t * command){
       dentry_t cmd_dentry;
       int32_t cmd_inode;
       int i;
-      int cmd_len;
 
       //vars for executable check
       uint8_t exe_dat[40];
@@ -298,6 +312,8 @@ int32_t execute_handler(const uint8_t * command){
       task_pcb[PID]->fd[3].flags.in_use = 0;
       task_pcb[PID]->fd[4].flags.in_use = 0;
       task_pcb[PID]->fd[5].flags.in_use = 0;
+      task_pcb[PID]->fd[6].flags.in_use = 0;
+      task_pcb[PID]->fd[7].flags.in_use = 0;
 
 
       //
@@ -333,6 +349,8 @@ int32_t execute_handler(const uint8_t * command){
 
       return 0;
 }
+
+
 
 /* read_handler
  * DESCRIPTION:   read takes a file descriptor as argument and reads a specific
@@ -413,33 +431,53 @@ int32_t open_handler(const uint8_t * filename){
        * 3. Fill out the file descriptor, depending on the file type (see filesys.h for more info)
        * 4. Return the index of the file descriptor in the PCB
        */
+       int i;
+       int fd_index = -1;
+
+       //get the pcb pointer
+       PCB_t * pcb;
+       pcb = get_pcb_ptr();
+
        dentry_t temp_dentry;
        if(read_dentry_by_name(filename, &temp_dentry)){
              return -1;
        }
 
-       test_pcb.fd[2].inode = temp_dentry.inode_num;
-       test_pcb.fd[2].file_pos = 0;
-       test_pcb.fd[2].flags.in_use = 1;
+       //grab the first available file descriptor
+       for(i = 0; i < 8; i++){
+             if(pcb->fd[i].flags.in_use == 0){
+                   fd_index = i;
+                   break;
+             }
+       }
+
+       //check if there was an empty spot
+       if(fd_index == -1){
+             return -1;
+       }
+
+       test_pcb.fd[fd_index].inode = temp_dentry.inode_num;
+       test_pcb.fd[fd_index].file_pos = 0;
+       test_pcb.fd[fd_index].flags.in_use = 1;
 
        switch(temp_dentry.file_type){
              case 0:
                   //RTC
-                  (test_pcb.fd[2].actions) = &rtc_op_table;
-                  return 2;
+                  (test_pcb.fd[fd_index].actions) = &rtc_op_table;
+                  return fd_index;
              case 1:
                   //Directory
-                  (test_pcb.fd[2].actions) = &dir_op_table;
-                  return 2;
+                  (test_pcb.fd[fd_index].actions) = &dir_op_table;
+                  return fd_index;
              case 2:
                   //Regular File
-                  (test_pcb.fd[2].actions) = &file_op_table;
-                  return 2;
+                  (test_pcb.fd[fd_index].actions) = &file_op_table;
+                  return fd_index;
              default:
                   return -2;
        }
 
-       return 2;
+       return fd_index;
 }
 
 /*close_handler
@@ -450,7 +488,15 @@ int32_t close_handler(int32_t fd){
       /* TODO:
        * 1. Fill the associated fd entry in the PCB with an "empty" value;
        */
-       return 0;
+       PCB_t * pcb;
+       pcb = get_pcb_ptr();
+       if(fd > 6 || fd < 0){
+            return -1;
+      }
+      else{
+            pcb->fd[fd].flags.in_use = 0;
+      }
+      return 0;
 }
 
 int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, uint32_t arg3){

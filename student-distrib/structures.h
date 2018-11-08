@@ -65,7 +65,7 @@ typedef struct data_block {
 
 /*Structure containing all PCB information*/
 typedef struct PCB {
-      file_descriptor_t fd[6];
+      file_descriptor_t fd[8];
       uint8_t is_active;
       int32_t PID;
 } PCB_t;
