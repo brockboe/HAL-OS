@@ -193,7 +193,7 @@ int32_t execute_handler(const uint8_t * command){
       //Check the 4 magic numbers
       for(i = 0; i < 4; i++){
             if(exe_dat[i] != x_magic[i]){
-                  return -2;
+                  return -1;
             }
       }
 
