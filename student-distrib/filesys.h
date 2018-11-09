@@ -33,6 +33,9 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t * dentry);
 //compares to strings to check if they are equal
 int32_t stringcompare(const uint8_t * a, const uint8_t * b, int cmplen);
 
+//get the length of a string
+int32_t stringlength(const uint8_t * string);
+
 //open a file
 int32_t file_open(const uint8_t * filename);
 

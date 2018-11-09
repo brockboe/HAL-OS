@@ -30,8 +30,8 @@
 #define USER_STACK_BEGIN 0x8400000 - 4
 
 static page_directory_t task_pd[MAX_CONCURRENT_TASKS] __attribute__((aligned (_4KB)));
-static PCB_t * task_pcb[6] = {(PCB_t *)(_8MB - 1 * _8KB),
-                              (PCB_t *)(_8MB - 2 * _8KB)};
+static PCB_t * task_pcb[MAX_CONCURRENT_TASKS] = {(PCB_t *)(_8MB - 2 * _8KB),
+                                                 (PCB_t *)(_8MB - 3 * _8KB)};
 
 PCB_t test_pcb;
 
@@ -164,6 +164,11 @@ int32_t execute_handler(const uint8_t * command){
             cmd_name[i] = command[i];
       }
 
+      //Check to see if we need to kill the terminal (quit command = kill term)
+      if(!stringcompare((uint8_t *)cmd_name, (uint8_t *)"quit", 4)){
+            (void)halt(0);
+      }
+
       //Begin searching for the file
       //First get the dentry
       if(read_dentry_by_name(cmd_name, &cmd_dentry)){
@@ -283,7 +288,7 @@ int32_t execute_handler(const uint8_t * command){
       //set up the TSS
 
       tss.ss0 =  KERNEL_DS;
-      tss.esp0 = _8MB - (PID * _8KB) - 4;
+      tss.esp0 = _8MB - ((PID+1) * _8KB) - 4;
 
             sti();
 
@@ -294,9 +299,6 @@ int32_t execute_handler(const uint8_t * command){
                         PUSHL %0                \n\
                         PUSHL %1                \n\
                         PUSHFL                  \n\
-                        POPL %%EAX              \n\
-                        ORL $0x200, %%EAX       \n\
-                        PUSHL %%EAX             \n\
                         PUSHL %2                \n\
                         PUSHL %3                \n\
                         IRET                    \n\

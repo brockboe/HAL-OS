@@ -4,10 +4,9 @@
 #include "keyboard.h"
 #include "rtc.h"
 #include "filesys.h"
-#include "syscall.h"
 #include "vc.h"
 #include "video.h"
-#include "syscall-lib.h"
+#include "syscall.h"
 
 #define PASS 1
 #define FAIL 0
@@ -353,6 +352,10 @@ int driver_test(){
 
 /* Test suite entry point */
 void launch_tests(){
+
+	uint8_t terminal_message[] = "\n Please do not hurt the terminal. \n Everytime you kill it, \n it only comes back stronger\n\n";
+	int32_t msg_len = stringlength(terminal_message);
+
 	/* idt_test */
 	TEST_OUTPUT("idt_test", idt_test());
 	/* paging_test */
@@ -364,7 +367,11 @@ void launch_tests(){
 	//driver_test();
 
 	fill_color();
-	execute((uint8_t *)"shell");
+
+	while(1){
+		execute((uint8_t *)"shell");
+		write(1, (void *)terminal_message, msg_len);
+	}
 
 	return;
 }
