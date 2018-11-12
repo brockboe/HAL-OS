@@ -164,6 +164,11 @@ int32_t execute_handler(const uint8_t * command){
             cmd_name[i] = command[i];
       }
 
+      //check if the command was simply an enter press
+      if(cmd_name[0] == 0){
+            return 0;
+      }
+
       //Check to see if we need to kill the terminal (quit command = kill term)
       if(!stringcompare((uint8_t *)cmd_name, (uint8_t *)"quit", 4)){
             (void)halt(0);
