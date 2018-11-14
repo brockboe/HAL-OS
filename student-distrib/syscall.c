@@ -29,21 +29,14 @@
 #define _8KB_MASK 0xFFFFE000
 
 #define USER_STACK_BEGIN 0x8400000 - 4
-
 #define VID_MEM_PD 33 // (132 MB / 4MB)
 
+
 static page_directory_t task_pd[MAX_CONCURRENT_TASKS] __attribute__((aligned (_4KB)));
-static PCB_t * task_pcb[6] = {(PCB_t *)(_8MB - 1 * _8KB),
-                              (PCB_t *)(_8MB - 2 * _8KB)};
-
-
-
+static PCB_t * task_pcb[MAX_CONCURRENT_TASKS] = {(PCB_t *)(_8MB - 2 * _8KB),
+                                                 (PCB_t *)(_8MB - 3 * _8KB)};
 
 PCB_t test_pcb;
-
-
-
-extern void context_switch(long user_ds, long user_sp, long user_cs, long entry_addr);
 
 //general format for device-specific io:
 //open(const uint8_t * filename)
@@ -77,7 +70,7 @@ PCB_t * get_pcb_ptr(){
       asm volatile("                \n\
             MOVL %%ESP, %%EAX       \n\
             ANDL %1, %%EAX          \n\
-            MOVL %%EAX, %0             \n\
+            MOVL %%EAX, %0          \n\
             "
             :"=r"(pcb)
             :"g"(_8KB_MASK)
@@ -115,11 +108,14 @@ int32_t halt_handler(uint8_t status){
 
       //jump to the end of the execute function and return our value
       asm volatile("                \n\
-            MOVL %0, %%EAX          \n\
+            MOVL %1, %%EBP          \n\
+            XORL %%EAX, %%EAX       \n\
+            MOVB %0, %%AL          \n\
             JMP execute_return      \n\
             "
             :
-            :"g"(status), "g"(task_pcb[current_pcb->parent_pcb->PID]->stack_pointer)
+            :"r"(status), "g"(current_pcb->parent_pcb->EBP)
+            :"%eax"
       );
 
       //we shouldn't get here because of the JMP instruction
@@ -157,9 +153,6 @@ int32_t execute_handler(const uint8_t * command){
       //vars for context switch
       void * user_sp;
 
-      //vars for return value
-      int32_t retval = 0;
-
       //
       //Step One : Parse
       //
@@ -172,6 +165,16 @@ int32_t execute_handler(const uint8_t * command){
       //grab the command
       for(i = 0; (i < CMD_MAX_LEN) && (command[i] != ' ') && (command[i] != '\n'); i++){
             cmd_name[i] = command[i];
+      }
+
+      //check if the command was simply an enter press
+      if(cmd_name[0] == 0){
+            return 0;
+      }
+
+      //Check to see if we need to kill the terminal (quit command = kill term)
+      if(!stringcompare((uint8_t *)cmd_name, (uint8_t *)"quit", 4)){
+            (void)halt(0);
       }
 
       //Begin searching for the file
@@ -198,7 +201,7 @@ int32_t execute_handler(const uint8_t * command){
       //Check the 4 magic numbers
       for(i = 0; i < 4; i++){
             if(exe_dat[i] != x_magic[i]){
-                  return -2;
+                  return -1;
             }
       }
 
@@ -261,6 +264,7 @@ int32_t execute_handler(const uint8_t * command){
       task_pcb[PID]->PID = PID;
       task_pcb[PID]->is_active = 1;
       task_pcb[PID]->parent_pcb = get_pcb_ptr();
+
       //set the fd's as empty
       task_pcb[PID]->fd[0].flags.in_use = 1;
       task_pcb[PID]->fd[0].actions = &vc_op_table;
@@ -273,6 +277,15 @@ int32_t execute_handler(const uint8_t * command){
       task_pcb[PID]->fd[6].flags.in_use = 0;
       task_pcb[PID]->fd[7].flags.in_use = 0;
 
+      //set the parent EBP
+      asm volatile("                \n\
+            MOVL %%EBP, %0          \n\
+            "
+            : "=r"(task_pcb[PID]->parent_pcb->EBP)
+      );
+
+      task_pcb[PID]->parent_pcb->ss0 = tss.ss0;
+      task_pcb[PID]->parent_pcb->esp0 = tss.esp0;
 
       //
       //Step Six : Context Switch
@@ -281,35 +294,32 @@ int32_t execute_handler(const uint8_t * command){
       user_sp = (void *)(_128MB + _4MB - 4);
 
       //set up the TSS
+
       tss.ss0 =  KERNEL_DS;
-      tss.esp0 = _8MB - (PID * _8KB) - 4;
+      tss.esp0 = _8MB - ((PID+1) * _8KB) - 4;
 
-      sti();
+            sti();
 
-            //lower the privilege level using IRET
-            asm volatile("                \n\
-                  MOVW %2, %%AX           \n\
-                  MOVW %%AX, %%DS         \n\
-                  PUSHL %2                \n\
-                  PUSHL %3                \n\
-                  PUSHFL                  \n\
-                  POPL %%EAX              \n\
-                  ORL $0x200, %%EAX       \n\
-                  PUSHL %%EAX             \n\
-                  PUSHL %4                \n\
-                  PUSHL %5                \n\
-                  MOVL %%ESP, %%EAX       \n\
-                  MOVL %%EAX, %1          \n\
-                  IRET                    \n\
-                  execute_return:         \n\
-                  MOVL %%EAX, %0          \n\
-                  "
-                  : "=g"(retval), "=g"(task_pcb[PID]->stack_pointer)
-                  :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)
-                  :"%eax"
-            );
+                  //lower the privilege level using IRET
+                  asm volatile("                \n\
+                        MOVW %2, %%AX           \n\
+                        MOVW %%AX, %%DS         \n\
+                        PUSHL %0                \n\
+                        PUSHL %1                \n\
+                        PUSHFL                  \n\
+                        PUSHL %2                \n\
+                        PUSHL %3                \n\
+                        IRET                    \n\
+                        execute_return:         \n\
+                        LEAVE                   \n\
+                        RET                     \n\
+                        "
+                        :
+                        :"g"(USER_DS), "g"(user_sp), "g"(USER_CS), "g"(entry_address)
+                        :"%eax"
+                  );
 
-      return retval;
+      return -1;
 }
 
 
@@ -460,6 +470,7 @@ int32_t close_handler(int32_t fd){
       }
       return 0;
 }
+
 /* vidmap_handler
  * description: maps text-mode video memory into user space at _132MB
  * input: screen_start is memory location provided by caller
@@ -475,9 +486,9 @@ int32_t vidmap_handler(uint8_t ** screen_start){
       //TODO: check to see where video memory is supposed to be with a ta
       if((((uint32_t) screen_start - _128MB) * (_132MB - (uint32_t) screen_start)) < 0)
             return -1;
-
-      //set up page table for video memory
-      //FIXME: someone should check this over thoroughly, very easily could've messed this up - Mike
+      //
+      // set up page table for video memory
+      // FIXME: someone should check this over thoroughly, very easily could've messed this up - Mike
       page_directory_entry_4kb_t tmp;
       tmp.present = 1;
       tmp.wr = 1;
@@ -490,6 +501,9 @@ int32_t vidmap_handler(uint8_t ** screen_start){
       tmp.g = 0;
       tmp.available = 0;
       tmp.table_base_addr = ((uint32_t) _132MB >> PAGING_SHIFT);
+
+      directory_paging[VID_MEM_PD] = tmp.val;
+
       init_control_reg(&directory_paging[VID_MEM_PD]);
 
       (*screen_start) = (uint8_t *) _132MB;
@@ -512,7 +526,6 @@ int32_t set_handler() {
 int32_t sigreturn_handler() {
       return -1;
 }
-
 
 int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, uint32_t arg3){
       switch(syscall_num){
@@ -538,7 +551,7 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
             case 8:
                   //vidmap
                   if(arg1 == NULL)
-                      return -1;
+                        return -1;
                   return vidmap_handler((uint8_t **) arg1);
             case 9:
                   //system getargs
