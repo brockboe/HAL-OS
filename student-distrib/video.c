@@ -67,8 +67,8 @@ void clear_term(){
       }
       //set the cursor back to 0.
       tinfo.offset = 0;
+      move_cursor(); // FIXME: Clear shouldn't remove 391OS> and move_cursor needs to be fixed as well as a result
       return;
-      move_cursor();
 }
 
 /* scroll_term
