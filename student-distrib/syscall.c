@@ -23,17 +23,25 @@
 #define _4MB 0x400000
 #define _8MB 0x800000
 #define _128MB 0x8000000
+#define _132MB 0x8400000
 #define _4KB 0x1000
 #define _8KB 0x2000
 #define _8KB_MASK 0xFFFFE000
 
 #define USER_STACK_BEGIN 0x8400000 - 4
 
+#define VID_MEM_PD 33 // (132 MB / 4MB)
+
 static page_directory_t task_pd[MAX_CONCURRENT_TASKS] __attribute__((aligned (_4KB)));
 static PCB_t * task_pcb[6] = {(PCB_t *)(_8MB - 1 * _8KB),
                               (PCB_t *)(_8MB - 2 * _8KB)};
 
+
+
+
 PCB_t test_pcb;
+
+
 
 extern void context_switch(long user_ds, long user_sp, long user_cs, long entry_addr);
 
@@ -452,6 +460,44 @@ int32_t close_handler(int32_t fd){
       }
       return 0;
 }
+/* vidmap_handler
+ * description: maps text-mode video memory into user space at _132MB
+ * input: screen_start is memory location provided by caller
+ * output: none
+ * side effects: none (for now...)
+ * return: _132MB is returned on success; -1 on failure
+ */
+int32_t vidmap_handler(uint8_t ** screen_start){
+  // if(screen_start == NULL)
+  //     return -1; moved NULL check to syscall_dispatcher - presumably fine to do (delete this later)
+
+      //screen_start must point to a pointer in video memory i.e. between _128MB and _132MB
+      //TODO: check to see where video memory is supposed to be with a ta
+      if((((uint32_t) screen_start - _128MB) * (_132MB - (uint32_t) screen_start)) < 0)
+            return -1;
+
+      //set up page table for video memory
+      //FIXME: someone should check this over thoroughly, very easily could've messed this up - Mike
+      page_directory_entry_4kb_t tmp;
+      tmp.present = 1;
+      tmp.wr = 1;
+      tmp.us = 1;
+      tmp.write_through = 1;
+      tmp.cached = 0;
+      tmp.accessed = 0;
+      tmp.paddling = 0;
+      tmp.page_size = 0;
+      tmp.g = 0;
+      tmp.available = 0;
+      tmp.table_base_addr = ((uint32_t) _132MB >> PAGING_SHIFT);
+      init_control_reg(&directory_paging[VID_MEM_PD]);
+
+      (*screen_start) = (uint8_t *) _132MB;
+
+      //TODO: documentation says return address, but I don't know if they mean "return address" or return "address"
+      //      check with TA on return value
+      return _132MB;
+}
 
 /*set_handler
  * 0 on success, -1 if fails
@@ -489,6 +535,11 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
             case 6:
                   //system close
                   return close_handler((int32_t)arg1);
+            case 8:
+                  //vidmap
+                  if(arg1 == NULL)
+                      return -1;
+                  return vidmap_handler((uint8_t **) arg1);
             case 9:
                   //system getargs
                   return set_handler();
