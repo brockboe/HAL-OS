@@ -94,7 +94,20 @@ void keyboard_interrupt_handler(){
       /*Get keyboard input*/
       key_pressed = inb(KEYBOARD_PORT);
 
+      /* arrow keys and page up / page down are non functional atm, poll for new input */
+      //TODO: add magic numbers for arrow keys page up and page down - Mike
+      if(key_pressed == 0x48 || key_pressed == 0x50 || key_pressed == 0x4B || key_pressed == 0x49 ||
+            key_pressed == 0x51 || key_pressed == 0x4D){
+
+              send_eoi(1);
+              enable_irq(1);
+              return;
+          }
+
+
+
       if(key_pressed == 0xE0){
+            printchar_term(0x02); //FIXME: fairly certain we never actually call this code and the unpress would be the polled key_pressed anyway
             key_pressed = inb(KEYBOARD_PORT);
       }
 
