@@ -38,8 +38,6 @@ static PCB_t * task_pcb[MAX_CONCURRENT_TASKS] = {(PCB_t *)(_8MB - 2 * _8KB),
 
 static uint32_t vidmap_pt[1024] __attribute__((aligned (_4KB)));
 
-PCB_t test_pcb;
-
 //general format for device-specific io:
 //open(const uint8_t * filename)
 //read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes)
@@ -358,15 +356,15 @@ int32_t read_handler(int32_t fd, void* buf, int32_t n_bytes){
        switch(fd){
              case 0:
                   //read from stdin
-                  return vc_read(test_pcb.fd[fd].inode, test_pcb.fd[fd].file_pos, (uint8_t *)buf, n_bytes);
+                  return vc_read(curr_pcb->fd[fd].inode, curr_pcb->fd[fd].file_pos, (uint8_t *)buf, n_bytes);
              case 1:
                   // "read" from standard out, ie, produce an error
                   return -1;
              default:{
                    //otherwise use the associated file handler in the file descriptor.
                    int32_t retval;
-                   retval = (test_pcb.fd[fd].actions->dev_read)(test_pcb.fd[fd].inode, test_pcb.fd[fd].file_pos, (uint8_t *)buf, n_bytes);
-                   test_pcb.fd[fd].file_pos += retval;
+                   retval = (curr_pcb->fd[fd].actions->dev_read)(curr_pcb->fd[fd].inode, curr_pcb->fd[fd].file_pos, (uint8_t *)buf, n_bytes);
+                   curr_pcb->fd[fd].file_pos += retval;
                    return retval;
              }
        }
@@ -410,7 +408,7 @@ int32_t write_handler(int32_t fd, const void * buf, int32_t n_bytes){
              default:
                   //otherwise the associated file handler in the file descriptor
                   //(should return an error)
-                  return (test_pcb.fd[fd].actions->dev_write)(fd, (const void *)buf, n_bytes);
+                  return (curr_pcb->fd[fd].actions->dev_write)(fd, (const void *)buf, n_bytes);
        }
 }
 
@@ -466,15 +464,15 @@ int32_t open_handler(const uint8_t * filename){
        switch(temp_dentry.file_type){
              case 0:
                   //RTC
-                  (test_pcb.fd[fd_index].actions) = &rtc_op_table;
+                  (pcb->fd[fd_index].actions) = &rtc_op_table;
                   return fd_index;
              case 1:
                   //Directory
-                  (test_pcb.fd[fd_index].actions) = &dir_op_table;
+                  (pcb->fd[fd_index].actions) = &dir_op_table;
                   return fd_index;
              case 2:
                   //Regular File
-                  (test_pcb.fd[fd_index].actions) = &file_op_table;
+                  (pcb->fd[fd_index].actions) = &file_op_table;
                   return fd_index;
              default:
                   return -2;
