@@ -436,13 +436,18 @@ int32_t open_handler(const uint8_t * filename){
        PCB_t * pcb;
        pcb = get_pcb_ptr();
 
+       //check for null pointer
+       if(filename == NULL || *filename == '\0'){
+             return -1;
+       }
+
        dentry_t temp_dentry;
        if(read_dentry_by_name(filename, &temp_dentry)){
              return -1;
        }
 
        //grab the first available file descriptor
-       for(i = 0; i < 8; i++){
+       for(i = 2; i < 8; i++){
              if(pcb->fd[i].flags.in_use == 0){
                    fd_index = i;
                    break;
@@ -454,9 +459,9 @@ int32_t open_handler(const uint8_t * filename){
              return -1;
        }
 
-       test_pcb.fd[fd_index].inode = temp_dentry.inode_num;
-       test_pcb.fd[fd_index].file_pos = 0;
-       test_pcb.fd[fd_index].flags.in_use = 1;
+       pcb->fd[fd_index].inode = temp_dentry.inode_num;
+       pcb->fd[fd_index].file_pos = 0;
+       pcb->fd[fd_index].flags.in_use = 1;
 
        switch(temp_dentry.file_type){
              case 0:
@@ -519,6 +524,11 @@ int32_t vidmap_handler(uint8_t ** screen_start){
             return -1;
       }
 
+      //check that pointer is within bounds
+      if((int)screen_start < _128MB || (int)screen_start >= _128MB + _4MB){
+            return -1;
+      }
+
       //set up the page table
       page_directory_entry_4kb_t temp;
       temp.table_base_addr = ((uint32_t)vidmap_pt) >> 12;
@@ -540,7 +550,7 @@ int32_t vidmap_handler(uint8_t ** screen_start){
       temp_pte.physical_page_addr = VIDMEM >> 12;
       temp_pte.available = 0;
       temp_pte.global = 0;
-      temp_pte.cached = 1;
+      temp_pte.cached = 0;
       temp_pte.us = 1;
       temp_pte.wr = 1;
       temp_pte.present = 1;
@@ -600,6 +610,6 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
                   //system sigreturn
                   return sigreturn_handler();
             default:
-                  return -2;
+                  return -1;
       }
 }
