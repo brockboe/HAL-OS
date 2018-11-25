@@ -36,6 +36,8 @@ static page_directory_t task_pd[MAX_CONCURRENT_TASKS] __attribute__((aligned (_4
 static PCB_t * task_pcb[MAX_CONCURRENT_TASKS] = {(PCB_t *)(_8MB - 2 * _8KB),
                                                  (PCB_t *)(_8MB - 3 * _8KB)};
 
+static uint32_t vidmap_pt[1024] __attribute__((aligned (_4KB)));
+
 PCB_t test_pcb;
 
 //general format for device-specific io:
@@ -341,6 +343,18 @@ int32_t read_handler(int32_t fd, void* buf, int32_t n_bytes){
        * 2. Call the function in the file descriptor
        * 3. Return the number of bytes read
        */
+
+       //check to ensure the current fd is in use
+       PCB_t * curr_pcb = get_pcb_ptr();
+
+       if(curr_pcb->fd[fd].flags.in_use == 0){
+             return -1;
+       }
+
+       if(fd < 0 || fd > 7){
+             return -1;
+       }
+
        switch(fd){
              case 0:
                   //read from stdin
@@ -374,6 +388,18 @@ int32_t write_handler(int32_t fd, const void * buf, int32_t n_bytes){
        * 2. Call the function in the file descriptor
        * 3. Return the value of the associated function
        */
+
+       //check to ensure the current fd is in use
+       PCB_t * curr_pcb = get_pcb_ptr();
+
+       if(curr_pcb->fd[fd].flags.in_use == 0){
+             return -1;
+       }
+
+       if(fd < 0 || fd > 7){
+             return -1;
+       }
+
        switch(fd){
              case 0:
                   //"write" to standard intput, ie, produce an error
@@ -458,17 +484,20 @@ int32_t open_handler(const uint8_t * filename){
  */
 int32_t close_handler(int32_t fd){
       /* TODO:
-       * 1. Fill the associated fd entry in the PCB with an "empty" value;
-       */
-       PCB_t * pcb;
-       pcb = get_pcb_ptr();
-       if(fd > 6 || fd < 0){
+      * 1. Fill the associated fd entry in the PCB with an "empty" value;
+      */
+      PCB_t * pcb;
+      pcb = get_pcb_ptr();
+      if(fd < 0 || fd > 7){
             return -1;
       }
-      else{
+      else if(fd == 0 || fd == 1){
+            return -1;
+      }
+      else if(pcb->fd[fd].flags.in_use != 0){
             pcb->fd[fd].flags.in_use = 0;
       }
-      return 0;
+      return -1;
 }
 
 /* vidmap_handler
@@ -479,38 +508,49 @@ int32_t close_handler(int32_t fd){
  * return: _132MB is returned on success; -1 on failure
  */
 int32_t vidmap_handler(uint8_t ** screen_start){
-  // if(screen_start == NULL)
-  //     return -1; moved NULL check to syscall_dispatcher - presumably fine to do (delete this after syserr check)
+      // if(screen_start == NULL)
+      //     return -1; moved NULL check to syscall_dispatcher - presumably fine to do (delete this after syserr check)
 
-      //screen_start must point to a pointer in video memory i.e. between _128MB and _132MB
-      if((((uint32_t) screen_start - _128MB) * (_132MB - (uint32_t) screen_start)) < 0)
+      PCB_t * curr_pcb = get_pcb_ptr();
+      uint32_t pid = curr_pcb->PID;
+
+      //Ensure the pointer is not NULL and is in bounds
+      if(screen_start == NULL){
             return -1;
+      }
 
-      // set up page table for video memory
-      // FIXME: figure out why this page faults - Mike
-      page_directory_entry_4kb_t tmp;
-      tmp.present = 1;
-      tmp.wr = 1;
-      tmp.us = 1;
-      tmp.write_through = 1;
-      tmp.cached = 1;
-      tmp.accessed = 0;
-      tmp.paddling = 0;
-      tmp.page_size = 0;
-      tmp.g = 0;
-      tmp.available = 0;
-      tmp.table_base_addr = ((uint32_t) (_132MB >> 22));
+      //set up the page table
+      page_directory_entry_4kb_t temp;
+      temp.table_base_addr = ((uint32_t)vidmap_pt) >> 12;
+      temp.available = 0;
+      temp.g = 0;
+      temp.page_size = 0;
+      temp.accessed = 0;
+      temp.cached = 0;
+      temp.write_through = 0;
+      temp.us = 1;
+      temp.wr = 1;
+      temp.present = 1;
 
-      int idx = (int) (_132MB >> 22);
+      //add the page table to the page directory
+      task_pd[pid].PDE[_132MB >> 22] = temp.val;
 
-      directory_paging[idx] = (uint32_t) tmp.val;
+      //add an entry to the page table
+      page_table_entry_t temp_pte;
+      temp_pte.physical_page_addr = VIDMEM >> 12;
+      temp_pte.available = 0;
+      temp_pte.global = 0;
+      temp_pte.cached = 1;
+      temp_pte.us = 1;
+      temp_pte.wr = 1;
+      temp_pte.present = 1;
 
-      init_control_reg(&directory_paging[idx]);
+      //insert the entry into the page table
+      vidmap_pt[((_132MB >> 12) & 0x03FF)]  = temp_pte.val;
 
+      *screen_start = (uint8_t *)_132MB;
 
-      (*screen_start) = (uint8_t *) _132MB;
-
-      return _132MB;
+      return 0;
 }
 
 /*set_handler
