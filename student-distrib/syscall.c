@@ -143,6 +143,7 @@ int32_t execute_handler(const uint8_t * command){
 
       //vars for executable check
       uint8_t exe_dat[40];
+      uint8_t arg_dat[128];
       uint8_t x_magic[4] = {X_MAGIC_1, X_MAGIC_2, X_MAGIC_3, X_MAGIC_4};
       void * entry_address;
 
@@ -165,6 +166,8 @@ int32_t execute_handler(const uint8_t * command){
       //grab the command
       for(i = 0; (i < CMD_MAX_LEN) && (command[i] != ' ') && (command[i] != '\n'); i++){
             cmd_name[i] = command[i];
+            // fill argbuf and increase length of data to be copied
+            arg_dat[i] = command[i];
       }
 
       //check if the command was simply an enter press
@@ -224,6 +227,10 @@ int32_t execute_handler(const uint8_t * command){
       if(PID == -1){
             return -1;
       }
+
+      // Store arg_data into pcb argbuf variable
+      PCB_t * curr_pcb = get_pcb_ptr();
+      strcpy((int8_t*)curr_pcb ->argbuf, (const int8_t*)arg_dat);
 
       //set up the paging
       //set up the vid mem
