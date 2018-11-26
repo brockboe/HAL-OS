@@ -520,7 +520,7 @@ int32_t getargs_handler(void * buf, int32_t n_bytes) {
     PCB_t * curr_pcb = get_pcb_ptr();
 
     // Check to see if argbuf size matches n_bytes to be copied
-    if(n_bytes < strlen((int8_t *) curr_pcb->argbuf + 1))
+    if(n_bytes < strlen((int8_t *) curr_pcb->argbuf) + 1)
     {
         return -1;
     }
