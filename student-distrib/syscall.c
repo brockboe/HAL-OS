@@ -503,6 +503,37 @@ int32_t close_handler(int32_t fd){
       return -1;
 }
 
+/* getargs handler
+ * description: puts arguments into the user level buffer
+ * input: user level buffer and nbytes
+ * output: 0 if successful, -1 if unsuccessful
+ *
+ */
+int32_t getargs_handler(void * buf, int32_t n_bytes) {
+    // Check invalid inputs
+    if(n_bytes <= 0 || buf == NULL)
+    {
+        return -1;
+    }
+
+    // Get current pcb pointer to modify argbuf
+    PCB_t * curr_pcb = get_pcb_ptr();
+
+    // Check to see if argbuf size matches n_bytes to be copied
+    if(n_bytes < strlen((int8_t *) curr_pcb->argbuf + 1))
+    {
+        return -1;
+    }
+
+    // Copy the argbuf in the pcb to the buf
+    memcpy((void*) buf, (void *)curr_pcb->argbuf, n_bytes);
+
+    // Successfully got args, so return 0
+    return 0;
+
+
+}
+
 /* vidmap_handler
  * description: maps text-mode video memory into user space at _132MB
  * input: screen_start is memory location provided by caller
@@ -596,13 +627,16 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
             case 6:
                   //system close
                   return close_handler((int32_t)arg1);
+            case 7:
+                  //system getargs
+                  return getargs_handler((void *)arg2, (int32_t)arg3);
             case 8:
                   //vidmap
                   if(arg1 == NULL)
                         return -1;
                   return vidmap_handler((uint8_t **) arg1);
             case 9:
-                  //system getargs
+                  // system set_handler
                   return set_handler();
             case 10:
                   //system sigreturn

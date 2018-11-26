@@ -7,7 +7,9 @@
 #include "vc.h"
 #include "video.h"
 #include "syscall.h"
+/*
 #include "sound.h"
+*/
 
 #define PASS 1
 #define FAIL 0
