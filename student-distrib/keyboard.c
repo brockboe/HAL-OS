@@ -107,7 +107,7 @@ void keyboard_interrupt_handler(){
 
 
       if(key_pressed == 0xE0){
-            printchar_term(0x02); //FIXME: fairly certain we never actually call this code and the unpress would be the polled key_pressed anyway
+            //printchar_term(0x02); //FIXME: fairly certain we never actually call this code and the unpress would be the polled key_pressed anyway
             key_pressed = inb(KEYBOARD_PORT);
       }
 
