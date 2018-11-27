@@ -140,6 +140,7 @@ int32_t execute_handler(const uint8_t * command){
       dentry_t cmd_dentry;
       int32_t cmd_inode;
       int i;
+      int cmd_len = 0;
 
       //vars for executable check
       uint8_t exe_dat[40];
@@ -166,8 +167,22 @@ int32_t execute_handler(const uint8_t * command){
       //grab the command
       for(i = 0; (i < CMD_MAX_LEN) && (command[i] != ' ') && (command[i] != '\n'); i++){
             cmd_name[i] = command[i];
-            // fill argbuf and increase length of data to be copied
-            arg_dat[i] = command[i];
+            cmd_len++;
+      }
+
+      //clear the argument string
+      for(i = 0; i < 128; i++){
+            arg_dat[i] = 0;
+      }
+      //check if arguments are present
+      //if arguments are present, grab them
+      if(command[cmd_len] == ' '){
+            //increment cmd_len so we don't grab the space
+            cmd_len++;
+            //grab the arguments
+            for(i = 0; command[i + cmd_len] != '\n' && command[i + cmd_len] != '\0'; i++){
+                  arg_dat[i] = command[i + cmd_len];
+            }
       }
 
       //check if the command was simply an enter press
@@ -229,8 +244,7 @@ int32_t execute_handler(const uint8_t * command){
       }
 
       // Store arg_data into pcb argbuf variable
-      PCB_t * curr_pcb = get_pcb_ptr();
-      strcpy((int8_t*)curr_pcb ->argbuf, (const int8_t*)arg_dat);
+      strcpy((int8_t*)task_pcb[PID]->argbuf, (const int8_t*)arg_dat);
 
       //set up the paging
       //set up the vid mem
@@ -506,6 +520,7 @@ int32_t close_handler(int32_t fd){
       }
       else if(pcb->fd[fd].flags.in_use != 0){
             pcb->fd[fd].flags.in_use = 0;
+            return;
       }
       return -1;
 }
@@ -525,6 +540,11 @@ int32_t getargs_handler(void * buf, int32_t n_bytes) {
 
     // Get current pcb pointer to modify argbuf
     PCB_t * curr_pcb = get_pcb_ptr();
+
+    //check if there are no arguments present
+    if(*curr_pcb->argbuf == '\0'){
+          return -1;
+    }
 
     // Check to see if argbuf size matches n_bytes to be copied
     if(n_bytes < strlen((int8_t *) curr_pcb->argbuf) + 1)
@@ -636,7 +656,7 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
                   return close_handler((int32_t)arg1);
             case 7:
                   //system getargs
-                  return getargs_handler((void *)arg2, (int32_t)arg3);
+                  return getargs_handler((void *)arg1, (int32_t)arg2);
             case 8:
                   //vidmap
                   if(arg1 == NULL)
