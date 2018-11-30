@@ -39,6 +39,11 @@ static unsigned int next_available;
 #define R_ARW     0x4D
 #define L_ARW     0x4B
 #define MAXCH     0x81
+#define FUN_1     0x3B
+#define FUN_2     0x3C
+#define FUN_3     0x3D
+#define ALT_L     0x38
+#define ALT_R     0x38
 
 #define U_S_L 0xAA
 #define U_S_R 0xB6
@@ -52,6 +57,7 @@ void handle_keyinput(unsigned char key_pressed);
 void enter_pressed();
 void backspace_pressed();
 void populate_keymappings_upper();
+void switch_terminal(int fn_num);
 
 /* keyboard_init
  * Description: Initialize the keyboard driver
@@ -150,6 +156,11 @@ void keyboard_interrupt_handler(){
                   break;
             }
 
+            case (ALT_L || ALT_R):{
+                  if(key_pressed == FUN_1 || key_pressed == FUN_2 || key_pressed == FUN_3)
+                        switch_terminal(FUN_1); //TODO: refactor around shift and capslock if necessary
+            }
+
             case U_S_L:{
                   shift_flag = 0;
                   break;
@@ -201,6 +212,18 @@ void keyboard_interrupt_handler(){
 void clear_tmp_buffer(){
     next_available = 0;
 }
+
+/* switch_terminal
+ * INPUT: function number which corresponds to a terminal to switch to
+ * OUTPUT: none
+ * SIDE EFFECTS: switches the buffer, video memory, and terminal display
+ * DESCRIPTION: switch to new terminal as specified by function number
+ */
+void switch_terminal(int fn_num){
+  //TODO: Implement me
+  return;
+}
+
 
 /* handle_keyinput
  * Description: helper function for keyboard interrupt handler that handles key press
@@ -285,6 +308,7 @@ void enter_pressed(){
       next_available = 0;
       return;
 }
+
 
 /* backspace_pressed
  * Description: helper function for keyboard interrupt handler that handles backspace
