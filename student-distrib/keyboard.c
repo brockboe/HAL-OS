@@ -32,6 +32,13 @@ static unsigned int next_available;
 #define SHIFT_R   0x36
 #define CAPS_LOCK 0x3A
 #define TAB       0x0F
+#define UPARW     0x48
+#define DNARW     0x50
+#define PGEUP     0x49
+#define PGEDN     0x51
+#define R_ARW     0x4D
+#define L_ARW     0x4B
+#define MAXCH     0x81
 
 #define U_S_L 0xAA
 #define U_S_R 0xB6
@@ -96,8 +103,8 @@ void keyboard_interrupt_handler(){
 
       /* arrow keys and page up / page down are non functional atm, poll for new input */
       //TODO: add magic numbers for arrow keys page up and page down - Mike
-      if(key_pressed == 0x48 || key_pressed == 0x50 || key_pressed == 0x4B || key_pressed == 0x49 ||
-            key_pressed == 0x51 || key_pressed == 0x4D){
+      if(key_pressed == UPARW || key_pressed == DNARW || key_pressed == L_ARW || key_pressed == R_ARW ||
+            key_pressed == PGEDN || key_pressed == PGEUP){
 
               send_eoi(1);
               enable_irq(1);
@@ -107,7 +114,7 @@ void keyboard_interrupt_handler(){
 
 
       if(key_pressed == 0xE0){
-            printchar_term(0x02); //FIXME: fairly certain we never actually call this code and the unpress would be the polled key_pressed anyway
+            // printchar_term(0x02); //FIXME: fairly certain we never actually call this code and the unpress would be the polled key_pressed anyway
             key_pressed = inb(KEYBOARD_PORT);
       }
 
@@ -211,7 +218,7 @@ void handle_keyinput(unsigned char key_pressed){
             return;
       }
 
-      if(key_pressed > 0x81){
+      if(key_pressed > MAXCH){
             return;
       }
 
@@ -223,8 +230,8 @@ void handle_keyinput(unsigned char key_pressed){
             printchar_term(tmp_k);
       }
       else if(cap_flag){
-        tmp_k = keymappings_caps[key_pressed];
-        printchar_term(tmp_k);
+            tmp_k = keymappings_caps[key_pressed];
+            printchar_term(tmp_k);
       }
       else if(shift_flag){
             tmp_k = keymappings_shift[key_pressed];
