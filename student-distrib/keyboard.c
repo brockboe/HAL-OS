@@ -20,6 +20,7 @@ void populate_keymappings_sc();
 static unsigned int ctrl_flag;
 static unsigned int shift_flag;
 static unsigned int cap_flag;
+static uint32_t     alt_flag;
 
 static unsigned char tmpbuffer[KEYBOARD];
 static unsigned int next_available;
@@ -44,6 +45,7 @@ static unsigned int next_available;
 #define FUN_3     0x3D
 #define ALT_L     0x38
 #define ALT_R     0x38
+#define U_ALT     0xB8
 
 #define U_S_L 0xAA
 #define U_S_R 0xB6
@@ -156,9 +158,14 @@ void keyboard_interrupt_handler(){
                   break;
             }
 
-            case (ALT_L || ALT_R):{
-                  if(key_pressed == FUN_1 || key_pressed == FUN_2 || key_pressed == FUN_3)
-                        switch_terminal(FUN_1); //TODO: refactor around shift and capslock if necessary
+            case (ALT_L):{
+                  alt_flag = 1;
+                  break;
+            }
+
+            case (U_ALT):{
+                  alt_flag = 0;
+                  break;
             }
 
             case U_S_L:{
@@ -168,6 +175,11 @@ void keyboard_interrupt_handler(){
 
             case U_S_R:{
                   shift_flag = 0;
+                  break;
+            }
+            case (FUN_1 || FUN_2 || FUN_3):{
+                  if(alt_flag)
+                        switch_terminal(key_pressed);
                   break;
             }
 
