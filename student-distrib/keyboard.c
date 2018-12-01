@@ -20,6 +20,7 @@ void populate_keymappings_sc();
 static unsigned int ctrl_flag;
 static unsigned int shift_flag;
 static unsigned int cap_flag;
+static uint32_t     alt_flag;
 
 static unsigned char tmpbuffer[KEYBOARD];
 static unsigned int next_available;
@@ -32,6 +33,19 @@ static unsigned int next_available;
 #define SHIFT_R   0x36
 #define CAPS_LOCK 0x3A
 #define TAB       0x0F
+#define UPARW     0x48
+#define DNARW     0x50
+#define PGEUP     0x49
+#define PGEDN     0x51
+#define R_ARW     0x4D
+#define L_ARW     0x4B
+#define MAXCH     0x81
+#define FUN_1     0x3B
+#define FUN_2     0x3C
+#define FUN_3     0x3D
+#define ALT_L     0x38
+#define ALT_R     0x38
+#define U_ALT     0xB8
 
 #define U_S_L 0xAA
 #define U_S_R 0xB6
@@ -45,6 +59,7 @@ void handle_keyinput(unsigned char key_pressed);
 void enter_pressed();
 void backspace_pressed();
 void populate_keymappings_upper();
+void switch_terminal(int fn_num);
 
 /* keyboard_init
  * Description: Initialize the keyboard driver
@@ -96,8 +111,8 @@ void keyboard_interrupt_handler(){
 
       /* arrow keys and page up / page down are non functional atm, poll for new input */
       //TODO: add magic numbers for arrow keys page up and page down - Mike
-      if(key_pressed == 0x48 || key_pressed == 0x50 || key_pressed == 0x4B || key_pressed == 0x49 ||
-            key_pressed == 0x51 || key_pressed == 0x4D){
+      if(key_pressed == UPARW || key_pressed == DNARW || key_pressed == L_ARW || key_pressed == R_ARW ||
+            key_pressed == PGEDN || key_pressed == PGEUP){
 
               send_eoi(1);
               enable_irq(1);
@@ -107,7 +122,7 @@ void keyboard_interrupt_handler(){
 
 
       if(key_pressed == 0xE0){
-            printchar_term(0x02); //FIXME: fairly certain we never actually call this code and the unpress would be the polled key_pressed anyway
+            //printchar_term(0x02); //FIXME: fairly certain we never actually call this code and the unpress would be the polled key_pressed anyway
             key_pressed = inb(KEYBOARD_PORT);
       }
 
@@ -143,6 +158,16 @@ void keyboard_interrupt_handler(){
                   break;
             }
 
+            case (ALT_L):{
+                  alt_flag = 1;
+                  break;
+            }
+
+            case (U_ALT):{
+                  alt_flag = 0;
+                  break;
+            }
+
             case U_S_L:{
                   shift_flag = 0;
                   break;
@@ -150,6 +175,11 @@ void keyboard_interrupt_handler(){
 
             case U_S_R:{
                   shift_flag = 0;
+                  break;
+            }
+            case (FUN_1 || FUN_2 || FUN_3):{
+                  if(alt_flag)
+                        switch_terminal(key_pressed);
                   break;
             }
 
@@ -195,6 +225,18 @@ void clear_tmp_buffer(){
     next_available = 0;
 }
 
+/* switch_terminal
+ * INPUT: function number which corresponds to a terminal to switch to
+ * OUTPUT: none
+ * SIDE EFFECTS: switches the buffer, video memory, and terminal display
+ * DESCRIPTION: switch to new terminal as specified by function number
+ */
+void switch_terminal(int fn_num){
+  //TODO: Implement me
+  return;
+}
+
+
 /* handle_keyinput
  * Description: helper function for keyboard interrupt handler that handles key press
  * Input: scan code of key pressed
@@ -211,7 +253,7 @@ void handle_keyinput(unsigned char key_pressed){
             return;
       }
 
-      if(key_pressed > 0x81){
+      if(key_pressed > MAXCH){
             return;
       }
 
@@ -223,8 +265,8 @@ void handle_keyinput(unsigned char key_pressed){
             printchar_term(tmp_k);
       }
       else if(cap_flag){
-        tmp_k = keymappings_caps[key_pressed];
-        printchar_term(tmp_k);
+            tmp_k = keymappings_caps[key_pressed];
+            printchar_term(tmp_k);
       }
       else if(shift_flag){
             tmp_k = keymappings_shift[key_pressed];
@@ -278,6 +320,7 @@ void enter_pressed(){
       next_available = 0;
       return;
 }
+
 
 /* backspace_pressed
  * Description: helper function for keyboard interrupt handler that handles backspace

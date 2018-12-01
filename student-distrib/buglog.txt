@@ -10,4 +10,13 @@ Checkpoint 3:
 
 Checkpoint 4:
 
+
+
+Need to change:
+- rtc not being cat properly 
+- user crash does not return to the kernel 
+- write and read should directly call on the function instead of switch of fd 
+
 Checkpoint 5:
+
+- Xinyi saw a cockroach on the stair of Krannert Center on Friday, November 30th.
