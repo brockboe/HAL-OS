@@ -16,25 +16,19 @@
 #define X_MAGIC_2 0x45
 #define X_MAGIC_3 0x4C
 #define X_MAGIC_4 0x46
-#define MAX_CONCURRENT_TASKS 2
-#define MAX_FS 1023*4096
 #define VIDMEM 0x000B8000
-#define PROG_OFFSET 0x48000
-#define _4MB 0x400000
-#define _8MB 0x800000
-#define _128MB 0x8000000
-#define _132MB 0x8400000
-#define _4KB 0x1000
-#define _8KB 0x2000
-#define _8KB_MASK 0xFFFFE000
 
 #define USER_STACK_BEGIN 0x8400000 - 4
 #define VID_MEM_PD 33 // (132 MB / 4MB)
 
 
-static page_directory_t task_pd[MAX_CONCURRENT_TASKS] __attribute__((aligned (_4KB)));
-static PCB_t * task_pcb[MAX_CONCURRENT_TASKS] = {(PCB_t *)(_8MB - 2 * _8KB),
-                                                 (PCB_t *)(_8MB - 3 * _8KB)};
+page_directory_t task_pd[MAX_CONCURRENT_TASKS] __attribute__((aligned (_4KB)));
+PCB_t * task_pcb[MAX_CONCURRENT_TASKS] = {(PCB_t *)(_8MB - 2 * _8KB),
+                                          (PCB_t *)(_8MB - 3 * _8KB),
+                                          (PCB_t *)(_8MB - 4 * _8KB),
+                                          (PCB_t *)(_8MB - 5 * _8KB),
+                                          (PCB_t *)(_8MB - 6 * _8KB),
+                                          (PCB_t *)(_8MB - 7 * _8KB)};
 
 static uint32_t vidmap_pt[1024] __attribute__((aligned (_4KB)));
 

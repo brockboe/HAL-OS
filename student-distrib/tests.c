@@ -7,6 +7,8 @@
 #include "vc.h"
 #include "video.h"
 #include "syscall.h"
+#include "term_sched.h"
+
 /*
 #include "sound.h"
 */
@@ -356,14 +358,6 @@ int driver_test(){
 /* Test suite entry point */
 void launch_tests(){
 
-	uint8_t terminal_message[] = "\n Please do not hurt the terminal. \n Everytime you kill it, \n it only comes back stronger\n\n";
-	int32_t msg_len = stringlength(terminal_message);
-
-	/* idt_test */
-	TEST_OUTPUT("idt_test", idt_test());
-	/* paging_test */
-	TEST_OUTPUT("paging_test", paging_test());
-
 	clear_term();
 
 	/*Tun all the driver tests*/
@@ -371,10 +365,8 @@ void launch_tests(){
 
 	fill_color();
 
-	while(1){
-		execute((uint8_t *)"shell");
-		write(1, (void *)terminal_message, msg_len);
-	}
+	setup_shells();
+	task_switch(2);
 
 	return;
 }

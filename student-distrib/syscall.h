@@ -8,9 +8,29 @@
 
 #define PAGE_SIZE 1024
 #define PAGING_SHIFT 12
+#define MAX_CONCURRENT_TASKS 6
+#define PROG_OFFSET 0x48000
+#define _4MB 0x400000
+#define _8MB 0x800000
+#define _128MB 0x8000000
+#define _132MB 0x8400000
+#define _4KB 0x1000
+#define _8KB 0x2000
+#define _8KB_MASK 0xFFFFE000
+#define MAX_FS 1023*4096
+
 
 //dispatcher used for interrupt handling
 int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, uint32_t arg3);
+
+extern page_directory_t task_pd[MAX_CONCURRENT_TASKS];
+extern PCB_t * task_pcb[MAX_CONCURRENT_TASKS];
+
+extern op_jmp_table_t vc_op_table;
+
+
+//returns the currently running process' PCB
+PCB_t * get_pcb_ptr();
 
 static inline int32_t execute(const uint8_t * command){
       int32_t retval;

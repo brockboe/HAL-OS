@@ -69,6 +69,49 @@ void init_paging(){
          temp.physical_page_addr = (0x000B8);
          paging_table[0xB8] = (uint32_t)temp.val;
 
+        // registering paging for terminal 1 video memory storage
+         temp.present = 1;
+         temp.wr = 1;
+         temp.us = 0;
+         temp.write_through = 1;
+         temp.cached = 0;
+         temp.accessed = 0;
+         temp.dirty = 0;
+         temp.pat = 0;
+         temp.global = 0;
+         temp.available = 0;
+         temp.physical_page_addr = (0x000B9);
+         paging_table[0xB9] = (uint32_t)temp.val;
+
+        // registering paging for termianl 2 video memory storage
+         temp.present = 1;
+         temp.wr = 1;
+         temp.us = 0;
+         temp.write_through = 1;
+         temp.cached = 0;
+         temp.accessed = 0;
+         temp.dirty = 0;
+         temp.pat = 0;
+         temp.global = 0;
+         temp.available = 0;
+         temp.physical_page_addr = (0x000BA);
+         paging_table[0xBA] = (uint32_t)temp.val;
+
+        // registering paging for terminal 3 video memory storage
+         temp.present = 1;
+         temp.wr = 1;
+         temp.us = 0;
+         temp.write_through = 1;
+         temp.cached = 0;
+         temp.accessed = 0;
+         temp.dirty = 0;
+         temp.pat = 0;
+         temp.global = 0;
+         temp.available = 0;
+         temp.physical_page_addr = (0x000BB);
+         paging_table[0xBB] = (uint32_t)temp.val;
+
+
         // set the second entry of PD pointing to the kernel space
           page_directory_entry_4mb_t temp_kernel;
         //   to set paging present to be 1,

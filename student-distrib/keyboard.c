@@ -21,7 +21,7 @@ static unsigned int ctrl_flag;
 static unsigned int shift_flag;
 static unsigned int cap_flag;
 
-static unsigned char tmpbuffer[KEYBOARD];
+static unsigned char tmpbuffer[128];
 static unsigned int next_available;
 
 #define ENTER     0x1C
