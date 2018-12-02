@@ -20,7 +20,6 @@ char * get_buffer();
 void clr_buf();
 void update_cursor(int x, int y);
 
-char vc_buffer[BUFFER_SIZE];
-
-
+int vc_active;
+char terminals[3][BUFFER_SIZE];
 #endif  /* _VC_H */

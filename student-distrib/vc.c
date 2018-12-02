@@ -17,9 +17,14 @@ void init_vc(void){
     clear();  /* FIXME change to our clear */
     update_cursor(0,0);
     int i;
-    for(i = 0; i < BUFFER_SIZE; i++){
-      vc_buffer[i] = '\0';
-    }
+    int j;
+    vc_active = 0;
+    for(j = 0; j < 3; j++){
+          for(i = 0; i < BUFFER_SIZE; i++){
+                terminals[j][i] = '\0';
+           }
+     }
+
     sti();
 }
 /*
@@ -92,10 +97,10 @@ int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t b
         bytes = BUFFER_SIZE; /* maximum number of bytes we can read */
     char* buffer =  (char *)buf;
 
-    while(vc_buffer[0] == '\0');
+    while(terminals[vc_active][0] == '\0');
 
     for(i = 0; i < bytes; i++){
-        buffer[i] = vc_buffer[i];
+        buffer[i] = terminals[vc_active][i];
         chars_written++;
     }
 
@@ -115,7 +120,7 @@ int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t b
 void clr_buf(){
     int i;
     for(i = 0; i < BUFFER_SIZE; i++){
-        vc_buffer[i] = '\0';
+        terminals[vc_active][i] = '\0';
     }
 }
 
@@ -137,7 +142,7 @@ void clr_buf(){
  * return a pointer to a buffer where the official keyboard output is stored.
  */
 char * get_buffer(){
-  return vc_buffer;
+  return terminals[vc_active];
 }
 
 

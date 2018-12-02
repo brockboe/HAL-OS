@@ -22,8 +22,10 @@ static unsigned int shift_flag;
 static unsigned int cap_flag;
 static uint32_t     alt_flag;
 
-static unsigned char tmpbuffer[KEYBOARD];
-static unsigned int next_available;
+
+
+static unsigned char tmpbuffer[3][BUFFER_SIZE];
+static unsigned int next_available[3];
 
 #define ENTER     0x1C
 #define CTRL_L    0x1D
@@ -59,7 +61,7 @@ void handle_keyinput(unsigned char key_pressed);
 void enter_pressed();
 void backspace_pressed();
 void populate_keymappings_upper();
-void switch_terminal(int fn_num);
+void switch_terminal(uint32_t fn_num);
 
 /* keyboard_init
  * Description: Initialize the keyboard driver
@@ -74,14 +76,25 @@ void keyboard_init(void) {
      ctrl_flag = 0;
      shift_flag = 0;
      cap_flag = 0;
+     int i;
+     int j;
+     for(i = 0; i < 3; i++){
+           next_available[vc_active] = 0;
+     }
 
-     next_available = 0;
+     for(j = 0; j < 3; j++){
+       {
+         for(i = 0; i < BUFFER_SIZE; i++){
+           tmpbuffer[j][i] = '\0';
+         }
+       }
+     }
+
 
     /* enable keyboard IRQ line on master PIC */
     enable_irq(KEYBOARD_IRQ_ON_MASTER);
 
     //clear tmp buffer so that people can type
-    clear_tmp_buffer();
     //clear flags
     ctrl_flag = 0;
     shift_flag = 0;
@@ -222,7 +235,7 @@ void keyboard_interrupt_handler(){
  */
 
 void clear_tmp_buffer(){
-    next_available = 0;
+    next_available[vc_active] = 0;
 }
 
 /* switch_terminal
@@ -231,8 +244,22 @@ void clear_tmp_buffer(){
  * SIDE EFFECTS: switches the buffer, video memory, and terminal display
  * DESCRIPTION: switch to new terminal as specified by function number
  */
-void switch_terminal(int fn_num){
+void switch_terminal(uint32_t fn_num){
   //TODO: Implement me
+
+  switch(fn_num){
+        case(FUN_1):
+               vc_active = 0;
+               break;
+        case(FUN_2):
+
+               vc_active = 1;
+               break;
+        case(FUN_3):
+               vc_active = 2;
+               break;
+
+  }
   return;
 }
 
@@ -249,7 +276,7 @@ void handle_keyinput(unsigned char key_pressed){
       /*check if it's ctrl + l to clear screen */
       if((key_pressed == L) && ctrl_flag){
             clear_term();
-            next_available = 0;
+            next_available[vc_active] = 0;
             return;
       }
 
@@ -279,12 +306,12 @@ void handle_keyinput(unsigned char key_pressed){
 
       /* save it to the tmp buffer */
       /* left the last one char in the buffer as '\n' */
-      if(next_available == BUFFER_SIZE-1){
+      if(next_available[vc_active] == BUFFER_SIZE-1){
             return;
       }
       else{
-            tmpbuffer[next_available] = tmp_k;
-            next_available ++;
+            tmpbuffer[vc_active][next_available[vc_active]] = tmp_k;
+            next_available[vc_active] ++;
             return;
       }
       return;
@@ -301,8 +328,8 @@ void handle_keyinput(unsigned char key_pressed){
 
 void enter_pressed(){
       /*add the newline at the end of the buffer */
-      tmpbuffer[next_available] = '\n';
-      next_available ++;
+      tmpbuffer[vc_active][next_available[vc_active]] = '\n';
+      next_available[vc_active] ++;
 
       printchar_term('\n');
 
@@ -313,11 +340,11 @@ void enter_pressed(){
       }
       /*deep copy everything from the keyboard buffer to the official terminal buffer */
       unsigned int i = 0;
-      for(i = 0; i < next_available; i++){
-            official[i] = tmpbuffer[i];
+      for(i = 0; i < next_available[vc_active]; i++){
+            official[i] = tmpbuffer[vc_active][i];
       }
       /*clear the keyboard buffer */
-      next_available = 0;
+      next_available[vc_active] = 0;
       return;
 }
 
@@ -332,12 +359,12 @@ void enter_pressed(){
 
 void backspace_pressed(){
       /*if nothing is in the keyboard buffer, return */
-      if(next_available == 0){
+      if(next_available[vc_active] == 0){
             return;
       }
       /*if there are things in the keyboard buffer, delete it and call the video buffer */
       else{
-            next_available --;
+            next_available[vc_active] --;
             backspace();
             return;
       }
