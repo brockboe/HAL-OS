@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "vc.h"
 #include "video.h"
+#include "term_sched.h"
 
 #define KEYBOARD 256
 
@@ -90,6 +91,9 @@ void keyboard_init(void) {
  */
 
 void keyboard_interrupt_handler(){
+
+      cli();
+
       unsigned char key_pressed;
       /*Get keyboard input*/
       key_pressed = inb(KEYBOARD_PORT);
@@ -180,6 +184,23 @@ void keyboard_interrupt_handler(){
       /*Return from interrupt*/
       send_eoi(1);
       enable_irq(1);
+
+      sti();
+
+      if(ctrl_flag){
+
+
+            current_display++;
+
+            if(current_display == 3){
+                  current_display = 0;
+            }
+
+            task_switch(current_display);
+
+
+      }
+
       return;
 }
 

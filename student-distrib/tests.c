@@ -365,8 +365,15 @@ void launch_tests(){
 
 	fill_color();
 
-	setup_shells();
-	task_switch(2);
+	current_display = 0;
+
+	prep_term_with_command((uint8_t *)"fish", 0);
+	prep_term_with_command((uint8_t *)"pingpong", 1);
+	prep_term_with_command((uint8_t *)"shell", 2);
+
+	task_switch(0);
+
+	while(1);
 
 	return;
 }
