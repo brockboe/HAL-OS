@@ -20,6 +20,12 @@ char * get_buffer();
 void clr_buf();
 void update_cursor(int x, int y);
 
+<<<<<<< HEAD
 int vc_active;
 char terminals[3][BUFFER_SIZE];
+=======
+char vc_buffer[3][BUFFER_SIZE];
+
+
+>>>>>>> checkpoint5/brock
 #endif  /* _VC_H */

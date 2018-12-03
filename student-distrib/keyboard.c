@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "vc.h"
 #include "video.h"
+#include "term_sched.h"
 
 #define KEYBOARD 256
 
@@ -22,9 +23,13 @@ static unsigned int shift_flag;
 static unsigned int cap_flag;
 static uint32_t     alt_flag;
 
+<<<<<<< HEAD
 
 
 static unsigned char tmpbuffer[3][BUFFER_SIZE];
+=======
+static unsigned char tmpbuffer[3][128];
+>>>>>>> checkpoint5/brock
 static unsigned int next_available[3];
 
 #define ENTER     0x1C
@@ -90,6 +95,10 @@ void keyboard_init(void) {
        }
      }
 
+<<<<<<< HEAD
+=======
+     next_available[current_display] = 0;
+>>>>>>> checkpoint5/brock
 
     /* enable keyboard IRQ line on master PIC */
     enable_irq(KEYBOARD_IRQ_ON_MASTER);
@@ -118,6 +127,18 @@ void keyboard_init(void) {
  */
 
 void keyboard_interrupt_handler(){
+
+
+
+
+           int old_display;
+
+
+
+
+
+      cli();
+
       unsigned char key_pressed;
       /*Get keyboard input*/
       key_pressed = inb(KEYBOARD_PORT);
@@ -223,6 +244,26 @@ void keyboard_interrupt_handler(){
       /*Return from interrupt*/
       send_eoi(1);
       enable_irq(1);
+
+      sti();
+
+      if(ctrl_flag){
+
+            old_display = current_display;
+
+            current_display++;
+
+            if(current_display == 3){
+                  current_display = 0;
+            }
+
+            vidchange(old_display, current_display);
+
+            task_switch(current_pid[current_display]);
+
+
+      }
+
       return;
 }
 
@@ -235,6 +276,7 @@ void keyboard_interrupt_handler(){
  */
 
 void clear_tmp_buffer(){
+<<<<<<< HEAD
     next_available[vc_active] = 0;
 }
 
@@ -261,6 +303,9 @@ void switch_terminal(uint32_t fn_num){
 
   }
   return;
+=======
+    next_available[current_display] = 0;
+>>>>>>> checkpoint5/brock
 }
 
 
@@ -276,7 +321,11 @@ void handle_keyinput(unsigned char key_pressed){
       /*check if it's ctrl + l to clear screen */
       if((key_pressed == L) && ctrl_flag){
             clear_term();
+<<<<<<< HEAD
             next_available[vc_active] = 0;
+=======
+            next_available[current_display] = 0;
+>>>>>>> checkpoint5/brock
             return;
       }
 
@@ -306,12 +355,21 @@ void handle_keyinput(unsigned char key_pressed){
 
       /* save it to the tmp buffer */
       /* left the last one char in the buffer as '\n' */
+<<<<<<< HEAD
       if(next_available[vc_active] == BUFFER_SIZE-1){
             return;
       }
       else{
             tmpbuffer[vc_active][next_available[vc_active]] = tmp_k;
             next_available[vc_active] ++;
+=======
+      if(next_available[current_display] == BUFFER_SIZE-1){
+            return;
+      }
+      else{
+            tmpbuffer[current_display][next_available[current_display]] = tmp_k;
+            next_available[current_display] ++;
+>>>>>>> checkpoint5/brock
             return;
       }
       return;
@@ -328,8 +386,13 @@ void handle_keyinput(unsigned char key_pressed){
 
 void enter_pressed(){
       /*add the newline at the end of the buffer */
+<<<<<<< HEAD
       tmpbuffer[vc_active][next_available[vc_active]] = '\n';
       next_available[vc_active] ++;
+=======
+      tmpbuffer[current_display][next_available[current_display]] = '\n';
+      next_available[current_display] ++;
+>>>>>>> checkpoint5/brock
 
       printchar_term('\n');
 
@@ -340,11 +403,19 @@ void enter_pressed(){
       }
       /*deep copy everything from the keyboard buffer to the official terminal buffer */
       unsigned int i = 0;
+<<<<<<< HEAD
       for(i = 0; i < next_available[vc_active]; i++){
             official[i] = tmpbuffer[vc_active][i];
       }
       /*clear the keyboard buffer */
       next_available[vc_active] = 0;
+=======
+      for(i = 0; i < next_available[current_display]; i++){
+            official[i] = tmpbuffer[current_display][i];
+      }
+      /*clear the keyboard buffer */
+      next_available[current_display] = 0;
+>>>>>>> checkpoint5/brock
       return;
 }
 
@@ -359,12 +430,20 @@ void enter_pressed(){
 
 void backspace_pressed(){
       /*if nothing is in the keyboard buffer, return */
+<<<<<<< HEAD
       if(next_available[vc_active] == 0){
+=======
+      if(next_available[current_display] == 0){
+>>>>>>> checkpoint5/brock
             return;
       }
       /*if there are things in the keyboard buffer, delete it and call the video buffer */
       else{
+<<<<<<< HEAD
             next_available[vc_active] --;
+=======
+            next_available[current_display] --;
+>>>>>>> checkpoint5/brock
             backspace();
             return;
       }

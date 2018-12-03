@@ -37,3 +37,5 @@ void set_term_x(uint32_t x);                   /* adjusts terminal offset by x  
 void print_num(int x);                         /* test function for printing numbers  */
 
 void fill_color();                             /* fills display with red              */
+
+void move_cursor();                             /* moves the cursor to the offset specified by tinfo*/
