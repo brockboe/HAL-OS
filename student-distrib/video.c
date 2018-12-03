@@ -1,12 +1,13 @@
 #include "video.h"
 #include "lib.h"
 #include "vc.h"
+#include "term_sched.h"
 
 #define CYAN 0xB
 #define RED 0xC
 
 vid_data_t * display;
-terminal_info_t tinfo;
+terminal_info_t tinfo[3];
 
 void move_cursor();
 void enable_cursor();
@@ -21,9 +22,9 @@ void enable_cursor();
 void vid_init(){
       int i;
       display = (vid_data_t *)VIDMEM;
-      tinfo.offset = 0;
-      tinfo.cursor_start = 0;
-      tinfo.cursor_end = 15;
+      tinfo[current_display].offset = 0;
+      tinfo[current_display].cursor_start = 0;
+      tinfo[current_display].cursor_end = 15;
       //Write the color information into the video memory.
       for(i = 0; i < MAXCHAR; i++){
             display[i].highbits = RED;
@@ -66,7 +67,7 @@ void clear_term(){
             display[i].character = 0;
       }
       //set the cursor back to 0.
-      tinfo.offset = 0;
+      tinfo[current_display].offset = 0;
       move_cursor(); // FIXME: Clear shouldn't remove 391OS> and move_cursor needs to be fixed as well as a result
       return;
 }
@@ -85,7 +86,7 @@ void scroll_term(){
             display[i - TERMWIDTH].character = display[i].character;
       }
       //set the cursor to the bottom row
-      tinfo.offset = TERMWIDTH * (TERMHEIGHT - 1);
+      tinfo[current_display].offset = TERMWIDTH * (TERMHEIGHT - 1);
 
       //clear the bottom row
       for(i = TERMWIDTH * (TERMHEIGHT - 1); i < MAXCHAR; i++){
@@ -110,18 +111,18 @@ void print_term(uint8_t * string, int length){
                   continue;
             }
             //check if we need to scroll
-            if(tinfo.offset >= MAXCHAR){
+            if(tinfo[current_display].offset >= MAXCHAR){
                   scroll_term();
             }
             //check if we have a new line
             if(string[i] == '\n'){
-                  tinfo.offset -= tinfo.offset % TERMWIDTH;
-                  tinfo.offset += TERMWIDTH;
+                  tinfo[current_display].offset -= tinfo[current_display].offset % TERMWIDTH;
+                  tinfo[current_display].offset += TERMWIDTH;
             }
             //otherwise simply print the character
             else{
-                  display[tinfo.offset].character = string[i];
-                  tinfo.offset++;
+                  display[tinfo[current_display].offset].character = string[i];
+                  tinfo[current_display].offset++;
             }
       }
       move_cursor();
@@ -140,19 +141,19 @@ void printchar_term(char a){
             return;
       }
       //check if we need to scroll
-      if(tinfo.offset >= MAXCHAR){
+      if(tinfo[current_display].offset >= MAXCHAR){
             scroll_term();
       }
       //check for nl character
       if(a == '\n'){
-            tinfo.offset -= tinfo.offset % TERMWIDTH;
-            tinfo.offset += TERMWIDTH;
+            tinfo[current_display].offset -= tinfo[current_display].offset % TERMWIDTH;
+            tinfo[current_display].offset += TERMWIDTH;
             move_cursor();
       }
       //otherwise print the character
       else{
-            display[tinfo.offset].character = a;
-            tinfo.offset++;
+            display[tinfo[current_display].offset].character = a;
+            tinfo[current_display].offset++;
       }
       move_cursor();
 }
@@ -165,11 +166,11 @@ void printchar_term(char a){
  * RETURN : none
  */
 void backspace(){
-      tinfo.offset--;
-      if(tinfo.offset > MAXCHAR){
-            tinfo.offset = 0;
+      tinfo[current_display].offset--;
+      if(tinfo[current_display].offset > MAXCHAR){
+            tinfo[current_display].offset = 0;
       }
-      display[tinfo.offset].character = 0;
+      display[tinfo[current_display].offset].character = 0;
       move_cursor();
       return;
 }
@@ -182,14 +183,14 @@ void backspace(){
  * RETURN : none
  */
 void tab(){
-      if(tinfo.offset == MAXCHAR){
+      if(tinfo[current_display].offset == MAXCHAR){
             scroll_term();
       }
-      if((tinfo.offset % TERMWIDTH + 10) > TERMWIDTH){
-            tinfo.offset += (TERMWIDTH - tinfo.offset % TERMWIDTH);
+      if((tinfo[current_display].offset % TERMWIDTH + 10) > TERMWIDTH){
+            tinfo[current_display].offset += (TERMWIDTH - tinfo[current_display].offset % TERMWIDTH);
       }
       else{
-            tinfo.offset = tinfo.offset + 10;
+            tinfo[current_display].offset = tinfo[current_display].offset + 10;
       }
       move_cursor();
       return;
@@ -206,8 +207,8 @@ void set_term_x(uint32_t x){
       if(x > TERMWIDTH){
             return;
       }
-      tinfo.offset -= tinfo.offset % TERMWIDTH;
-      tinfo.offset += x;
+      tinfo[current_display].offset -= tinfo[current_display].offset % TERMWIDTH;
+      tinfo[current_display].offset += x;
       move_cursor();
       return;
 }
@@ -251,7 +252,7 @@ void print_num(int x){
  on the osdev.org wiki
  */
  void move_cursor(){
-       uint32_t pos = tinfo.offset;
+       uint32_t pos = tinfo[current_display].offset;
        outb(0x0F, 0x3D4);
        outb((uint8_t)(pos & 0xFF), 0x3D5);
        outb(0x0E, 0x3D4);
@@ -260,8 +261,8 @@ void print_num(int x){
 
  void enable_cursor(){
        outb(0x0A, 0x3D4);
-       outb((inb(0x3D5) & 0xC0) | tinfo.cursor_start, 0x3D5);
+       outb((inb(0x3D5) & 0xC0) | tinfo[current_display].cursor_start, 0x3D5);
 
       outb(0x3D4, 0x0B);
-      outb((inb(0x3D5) & 0xE0) | tinfo.cursor_end, 0x3D5);
+      outb((inb(0x3D5) & 0xE0) | tinfo[current_display].cursor_end, 0x3D5);
  }

@@ -102,42 +102,16 @@ void task_switch(int PID){
 // change the pt entry to the real one
 //update the cursor location
 
-void vidchange(int pre, int next){
+void vidchange(int from, int to){
 
-     // if switching to the current terminal, do nothing
-     if(pre == next){
-           return;
-     }
+      // 1. Save the current video memory in the correct location
+      (void)memcpy((void *)(VIDMEM + (from+1)*_4KB), (void *)VIDMEM, _4KB);
 
-     //else, switch the terminal and video memory information
-     uint32_t pdindex = (uint32_t)VIDMEM >> 22;
-     uint32_t ptindex = (uint32_t)VIDMEM >> 12 & 0x03FF;
-     uint32_t offset = (uint32_t)VIDMEM & 0x0FFF;
+      // 2. Load the new terminals saved video memory into the real video memory
+      (void)memcpy( (void *)VIDMEM, (void *)(VIDMEM + (to+1)*_4KB), _4KB);
 
-     uint32_t * pt = (uint32_t *)(task_pd[pre].PDE[pdindex] & ~0xFFF);
-
-     uint32_t real_vid_mem = (pt[ptindex] & ~0xFFF) + offset;
-
-     uint32_t pre_vid_mem = real_vid_mem + _4KB * pre; //FIX ME
-
-     //copy the 4KB page from the actual vid mem to pre’s vid mem
-     memcpy((void*) pre_vid_mem, (void *)real_vid_mem, 4000);
-
-     //update the corresponding physical address of the virtal vidmeme of pre termianl
-     pt[ptindex] = (uint32_t)pre_vid_mem >> 12 & 0x03FF;
-
-     //save its cursor position
-
-
-     //get the address of next terminal’s vid mem
-     uint32_t next_vid_mem = real_vid_mem + _4KB * next;
-
-     //copy the next’s vidmeme content into the real vidmem
-     memcpy((void*)real_vid_mem, (void*)next_vid_mem, 4000);
-
-     //update the corresponding pa of vidmem in the next terminal’s va’s vidmem
-     pt = (uint32_t *)(task_pd[next].PDE[pdindex] & ~0xFFF);
-     pt[ptindex] = (uint32_t)next_vid_mem >> 12 & 0x03FF;
+      // 3. Update the cursor position
+      move_cursor();
 
      return;
 }

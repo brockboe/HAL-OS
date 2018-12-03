@@ -368,8 +368,8 @@ void launch_tests(){
 	current_display = 0;
 
 	prep_term_with_command((uint8_t *)"shell", 0);
-	prep_term_with_command((uint8_t *)"pingpong", 1);
-	prep_term_with_command((uint8_t *)"fish", 2);
+	prep_term_with_command((uint8_t *)"shell", 1);
+	prep_term_with_command((uint8_t *)"shell", 2);
 
 	task_switch(0);
 

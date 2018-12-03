@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "keyboard.h"
 #include "video.h"
+#include "term_sched.h"
 
 /*
  * init_vc
@@ -18,7 +19,7 @@ void init_vc(void){
     update_cursor(0,0);
     int i;
     for(i = 0; i < BUFFER_SIZE; i++){
-      vc_buffer[i] = '\0';
+      vc_buffer[current_display][i] = '\0';
     }
     sti();
 }
@@ -92,10 +93,10 @@ int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t b
         bytes = BUFFER_SIZE; /* maximum number of bytes we can read */
     char* buffer =  (char *)buf;
 
-    while(vc_buffer[0] == '\0');
+    while(vc_buffer[current_display][0] == '\0');
 
     for(i = 0; i < bytes; i++){
-        buffer[i] = vc_buffer[i];
+        buffer[i] = vc_buffer[current_display][i];
         chars_written++;
     }
 
@@ -105,17 +106,17 @@ int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t b
 
 /*
  * clr_buf
- * Description: Helper function to clear the vc_buffer
+ * Description: Helper function to clear the vc_buffer[current_display]
  * Input: none
  * Output: none
- * Side effects: vc_buffer emptied
+ * Side effects: vc_buffer[current_display] emptied
  * Return: none
  */
 
 void clr_buf(){
     int i;
     for(i = 0; i < BUFFER_SIZE; i++){
-        vc_buffer[i] = '\0';
+        vc_buffer[current_display][i] = '\0';
     }
 }
 
@@ -137,7 +138,7 @@ void clr_buf(){
  * return a pointer to a buffer where the official keyboard output is stored.
  */
 char * get_buffer(){
-  return vc_buffer;
+  return vc_buffer[current_display];
 }
 
 

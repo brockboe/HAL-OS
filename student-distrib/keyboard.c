@@ -22,8 +22,8 @@ static unsigned int ctrl_flag;
 static unsigned int shift_flag;
 static unsigned int cap_flag;
 
-static unsigned char tmpbuffer[128];
-static unsigned int next_available;
+static unsigned char tmpbuffer[3][128];
+static unsigned int next_available[3];
 
 #define ENTER     0x1C
 #define CTRL_L    0x1D
@@ -61,7 +61,7 @@ void keyboard_init(void) {
      shift_flag = 0;
      cap_flag = 0;
 
-     next_available = 0;
+     next_available[current_display] = 0;
 
     /* enable keyboard IRQ line on master PIC */
     enable_irq(KEYBOARD_IRQ_ON_MASTER);
@@ -91,6 +91,15 @@ void keyboard_init(void) {
  */
 
 void keyboard_interrupt_handler(){
+
+
+
+
+           int old_display;
+
+
+
+
 
       cli();
 
@@ -189,12 +198,15 @@ void keyboard_interrupt_handler(){
 
       if(ctrl_flag){
 
+            old_display = current_display;
 
             current_display++;
 
             if(current_display == 3){
                   current_display = 0;
             }
+
+            vidchange(old_display, current_display);
 
             task_switch(current_display);
 
@@ -213,7 +225,7 @@ void keyboard_interrupt_handler(){
  */
 
 void clear_tmp_buffer(){
-    next_available = 0;
+    next_available[current_display] = 0;
 }
 
 /* handle_keyinput
@@ -228,7 +240,7 @@ void handle_keyinput(unsigned char key_pressed){
       /*check if it's ctrl + l to clear screen */
       if((key_pressed == L) && ctrl_flag){
             clear_term();
-            next_available = 0;
+            next_available[current_display] = 0;
             return;
       }
 
@@ -258,12 +270,12 @@ void handle_keyinput(unsigned char key_pressed){
 
       /* save it to the tmp buffer */
       /* left the last one char in the buffer as '\n' */
-      if(next_available == BUFFER_SIZE-1){
+      if(next_available[current_display] == BUFFER_SIZE-1){
             return;
       }
       else{
-            tmpbuffer[next_available] = tmp_k;
-            next_available ++;
+            tmpbuffer[current_display][next_available[current_display]] = tmp_k;
+            next_available[current_display] ++;
             return;
       }
       return;
@@ -280,8 +292,8 @@ void handle_keyinput(unsigned char key_pressed){
 
 void enter_pressed(){
       /*add the newline at the end of the buffer */
-      tmpbuffer[next_available] = '\n';
-      next_available ++;
+      tmpbuffer[current_display][next_available[current_display]] = '\n';
+      next_available[current_display] ++;
 
       printchar_term('\n');
 
@@ -292,11 +304,11 @@ void enter_pressed(){
       }
       /*deep copy everything from the keyboard buffer to the official terminal buffer */
       unsigned int i = 0;
-      for(i = 0; i < next_available; i++){
-            official[i] = tmpbuffer[i];
+      for(i = 0; i < next_available[current_display]; i++){
+            official[i] = tmpbuffer[current_display][i];
       }
       /*clear the keyboard buffer */
-      next_available = 0;
+      next_available[current_display] = 0;
       return;
 }
 
@@ -310,12 +322,12 @@ void enter_pressed(){
 
 void backspace_pressed(){
       /*if nothing is in the keyboard buffer, return */
-      if(next_available == 0){
+      if(next_available[current_display] == 0){
             return;
       }
       /*if there are things in the keyboard buffer, delete it and call the video buffer */
       else{
-            next_available --;
+            next_available[current_display] --;
             backspace();
             return;
       }
