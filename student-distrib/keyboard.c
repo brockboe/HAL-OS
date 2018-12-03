@@ -78,7 +78,7 @@ void keyboard_init(void) {
      int i;
      int j;
      for(i = 0; i < 3; i++){
-           next_available[vc_active] = 0;
+           next_available[i] = 0;
      }
 
      for(j = 0; j < 3; j++){
@@ -200,11 +200,6 @@ void keyboard_interrupt_handler(){
 
             case U_S_R:{
                   shift_flag = 0;
-                  break;
-            }
-            case (FUN_1 || FUN_2 || FUN_3):{
-                  if(alt_flag)
-                        switch_terminal(key_pressed);
                   break;
             }
 
