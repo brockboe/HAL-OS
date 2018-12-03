@@ -8,6 +8,7 @@
 #include "paging.h"
 #include "syscall.h"
 #include "video.h"
+#include "term_sched.h"
 
 
 #define CMD_MAX_LEN 32
@@ -77,6 +78,13 @@ int32_t halt_handler(uint8_t status){
       PCB_t * current_pcb;
       cli();
       current_pcb = get_pcb_ptr();
+
+      //ensure we don't close the base shells
+      if(current_pcb->PID < 3){
+            return 0;
+      }
+
+      current_pid[current_display] = current_pcb->parent_pcb->PID;
 
       //Set all the file descriptors to open
       task_pcb[current_pcb->PID]->fd[0].flags.in_use = 0;
@@ -236,6 +244,9 @@ int32_t execute_handler(const uint8_t * command){
       if(PID == -1){
             return -1;
       }
+
+      //load that PID into the current_PID
+      current_pid[current_display] = PID;
 
       // Store arg_data into pcb argbuf variable
       strcpy((int8_t*)task_pcb[PID]->argbuf, (const int8_t*)arg_dat);

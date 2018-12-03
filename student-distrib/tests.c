@@ -367,6 +367,8 @@ void launch_tests(){
 
 	current_display = 0;
 
+	init_terms();
+
 	prep_term_with_command((uint8_t *)"shell", 0);
 	prep_term_with_command((uint8_t *)"shell", 1);
 	prep_term_with_command((uint8_t *)"shell", 2);

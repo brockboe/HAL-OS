@@ -208,7 +208,7 @@ void keyboard_interrupt_handler(){
 
             vidchange(old_display, current_display);
 
-            task_switch(current_display);
+            task_switch(current_pid[current_display]);
 
 
       }

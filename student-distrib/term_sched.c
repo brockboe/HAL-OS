@@ -10,6 +10,13 @@
 int current_display;
 int current_pid[3];
 
+void init_terms(){
+      current_pid[0] = 0;
+      current_pid[1] = 1;
+      current_pid[2] = 2;
+      return;
+}
+
 void task_switch(int PID){
       cli();
 
@@ -28,17 +35,15 @@ void task_switch(int PID){
       //get a pointer to the old PCB
       PCB_t * old_pcb = get_pcb_ptr();
 
-      if((int)old_pcb != _8MB - 1*_8KB){
-            //save the old EBP, SS0, and ESP0
+      //save the old EBP, SS0, and ESP0
 
-            asm volatile("                \n\
-                  MOVL %%EBP, %0          \n\
-                  "
-                  : "=r"(old_pcb->EBP)
-            );
-            old_pcb->ss0 = tss.ss0;
-            old_pcb->esp0 = tss.esp0;
-      }
+      asm volatile("                \n\
+            MOVL %%EBP, %0          \n\
+            "
+            : "=r"(old_pcb->EBP)
+      );
+      old_pcb->ss0 = tss.ss0;
+      old_pcb->esp0 = tss.esp0;
 
       //
       // 2. Switch paging for the new process

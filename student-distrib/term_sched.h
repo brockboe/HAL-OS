@@ -8,5 +8,6 @@ void setup_shells();
 void task_switch(int PID);
 void prep_term_with_command(uint8_t * command, int term_number);
 void vidchange(int from, int to);
+void init_terms();
 
 #endif
