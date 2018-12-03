@@ -13,10 +13,16 @@ unsigned char keymappings_shift[KEYBOARD]; /* shift pressed down - no caps lock 
 unsigned char keymappings_caps[KEYBOARD];  /* caps lock pressed down - no shift      */
 unsigned char keymappings_sc[KEYBOARD];    /* both shift and caps lock               */
 
+//store which key codes map to alphanumeric characters
+// 1 -> key is a character, number, or symbol
+// 0 -> otherwise
+uint8_t alphanumeric[KEYBOARD];
+
 void populate_keymappings();
 void populate_keymappings_shift();
 void populate_keymappings_caps();
 void populate_keymappings_sc();
+void populate_alphanumeric();
 
 static unsigned int ctrl_flag;
 static unsigned int shift_flag;
@@ -104,6 +110,7 @@ void keyboard_init(void) {
     populate_keymappings_shift();
     populate_keymappings_sc();
     populate_keymappings_caps();
+    populate_alphanumeric();
 
     sti();
     return;
@@ -298,11 +305,6 @@ void handle_keyinput(unsigned char key_pressed){
             tmp_k = keymappings_shift[key_pressed];
             printchar_term(tmp_k);
       }
-      else if(alt_flag){
-            if(key_pressed == FUN_1 || key_pressed == FUN_2 || key_pressed == FUN_3){
-                  return;
-            }
-      }
       else{
             tmp_k = keymappings[key_pressed];
             printchar_term(tmp_k);
@@ -314,8 +316,11 @@ void handle_keyinput(unsigned char key_pressed){
             return;
       }
       else{
-            tmpbuffer[current_display][next_available[current_display]] = tmp_k;
-            next_available[current_display] ++;
+            //ensure what we have is either a number, character, or symbol
+            if(alphanumeric[key_pressed]){
+                  tmpbuffer[current_display][next_available[current_display]] = tmp_k;
+                  next_available[current_display] ++;
+            }
             return;
       }
       return;
@@ -635,5 +640,61 @@ void populate_keymappings_sc(){
   keymappings_sc[0x34] = '>';
   keymappings_sc[0x35] = '?';
   keymappings_sc[0x39] = ' ';
+
+}
+
+
+void populate_alphanumeric(){
+      (void) memset((void *)alphanumeric, 0, KEYBOARD);
+
+      alphanumeric[0x29] = (uint8_t)1;
+      alphanumeric[0x02] = (uint8_t)1;
+      alphanumeric[0x03] = (uint8_t)1;
+      alphanumeric[0x04] = (uint8_t)1;
+      alphanumeric[0x05] = (uint8_t)1;
+      alphanumeric[0x06] = (uint8_t)1;
+      alphanumeric[0x07] = (uint8_t)1;
+      alphanumeric[0x08] = (uint8_t)1;
+      alphanumeric[0x09] = (uint8_t)1;
+      alphanumeric[0x0A] = (uint8_t)1;
+      alphanumeric[0x0B] = (uint8_t)1;
+      alphanumeric[0x0C] = (uint8_t)1;
+      alphanumeric[0x0D] = (uint8_t)1;
+      alphanumeric[0x10] = (uint8_t)1;
+      alphanumeric[0x11] = (uint8_t)1;
+      alphanumeric[0x12] = (uint8_t)1;
+      alphanumeric[0x13] = (uint8_t)1;
+      alphanumeric[0x14] = (uint8_t)1;
+      alphanumeric[0x15] = (uint8_t)1;
+      alphanumeric[0x16] = (uint8_t)1;
+      alphanumeric[0x17] = (uint8_t)1;
+      alphanumeric[0x18] = (uint8_t)1;
+      alphanumeric[0x19] = (uint8_t)1;
+      alphanumeric[0x1A] = (uint8_t)1;
+      alphanumeric[0x1B] = (uint8_t)1;
+      alphanumeric[0x1E] = (uint8_t)1;
+      alphanumeric[0x1F] = (uint8_t)1;
+      alphanumeric[0x20] = (uint8_t)1;
+      alphanumeric[0x21] = (uint8_t)1;
+      alphanumeric[0x22] = (uint8_t)1;
+      alphanumeric[0x23] = (uint8_t)1;
+      alphanumeric[0x24] = (uint8_t)1;
+      alphanumeric[0x25] = (uint8_t)1;
+      alphanumeric[0x26] = (uint8_t)1;
+      alphanumeric[0x27] = (uint8_t)1;
+      alphanumeric[0x28] = (uint8_t)1;
+      alphanumeric[0x2C] = (uint8_t)1;
+      alphanumeric[0x2D] = (uint8_t)1;
+      alphanumeric[0x2E] = (uint8_t)1;
+      alphanumeric[0x2F] = (uint8_t)1;
+      alphanumeric[0x30] = (uint8_t)1;
+      alphanumeric[0x31] = (uint8_t)1;
+      alphanumeric[0x32] = (uint8_t)1;
+      alphanumeric[0x33] = (uint8_t)1;
+      alphanumeric[0x34] = (uint8_t)1;
+      alphanumeric[0x35] = (uint8_t)1;
+      alphanumeric[0x2B] = (uint8_t)1;
+
+      return;
 
 }

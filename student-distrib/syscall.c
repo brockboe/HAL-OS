@@ -525,7 +525,7 @@ int32_t close_handler(int32_t fd){
       }
       else if(pcb->fd[fd].flags.in_use != 0){
             pcb->fd[fd].flags.in_use = 0;
-            return;
+            return 0;
       }
       return -1;
 }
@@ -652,7 +652,6 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
             case 4:
                   //system write
                   return write_handler((int32_t)arg1, (const void *)arg2, (int32_t)arg3);
-                  fill_color();
             case 5:
                   //system open
                   return open_handler((const uint8_t *)arg1);

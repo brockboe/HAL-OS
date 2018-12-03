@@ -307,7 +307,6 @@ void free_typing(){
  * the user hits enter, the function moves onto the next test.
  */
 int driver_test(){
-	fill_color();
 
 	int retval;
 	uint8_t temp[10];

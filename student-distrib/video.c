@@ -3,6 +3,7 @@
 #include "vc.h"
 #include "term_sched.h"
 
+#define GREEN 0xA
 #define CYAN 0xB
 #define RED 0xC
 
@@ -20,17 +21,16 @@ void enable_cursor();
  * Return : none
  */
 void vid_init(){
-      int i;
       display = (vid_data_t *)VIDMEM;
       tinfo[current_display].offset = 0;
       tinfo[current_display].cursor_start = 0;
       tinfo[current_display].cursor_end = 15;
       //Write the color information into the video memory.
-      for(i = 0; i < MAXCHAR; i++){
-            display[i].highbits = RED;
-      }
 
-      fill_color();
+      fill_color(0, RED);
+      fill_color(1, RED);
+      fill_color(2, CYAN);
+      fill_color(3, GREEN);
       enable_cursor();
       move_cursor();
       return;
@@ -44,11 +44,13 @@ void vid_init(){
  * Return : none
  */
 
-void fill_color(){
+void fill_color(int vid_page, uint8_t color){
+      vid_data_t * temp_display = (vid_data_t *)(VIDMEM + vid_page * 0x1000);
+
       int i;
       //write the color information into the video memory
       for(i = 0; i < MAXCHAR; i++){
-            display[i].highbits = RED;
+            temp_display[i].highbits = color;
       }
       return;
 }

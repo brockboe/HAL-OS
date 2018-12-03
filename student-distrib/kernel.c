@@ -198,8 +198,6 @@ void entry(unsigned long magic, unsigned long addr) {
 
     clear_term();
 
-    fill_color();
-
     current_display = 0;
 
     init_terms();
