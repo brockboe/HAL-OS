@@ -15,6 +15,7 @@
 #include "paging.h"
 #include "filesys.h"
 #include "video.h"
+#include "term_sched.h"
 
 #define RUN_TESTS
 //#define RUN_EXCEPTION_TEST
@@ -194,6 +195,22 @@ void entry(unsigned long magic, unsigned long addr) {
     launch_page_fault_test();
 #endif
     /* Execute the first program ("shell") ... */
+
+    clear_term();
+
+    fill_color();
+
+    current_display = 0;
+
+    init_terms();
+
+    prep_term_with_command((uint8_t *)"shell", 0);
+    prep_term_with_command((uint8_t *)"shell", 1);
+    prep_term_with_command((uint8_t *)"shell", 2);
+
+    task_switch(0);
+
+    while(1);
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");

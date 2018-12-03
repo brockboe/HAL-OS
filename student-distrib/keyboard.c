@@ -119,15 +119,7 @@ void keyboard_init(void) {
 
 void keyboard_interrupt_handler(){
 
-
-
-
-           int old_display;
-
-
-
-
-
+      int old_display;
       cli();
 
       unsigned char key_pressed;
@@ -233,21 +225,26 @@ void keyboard_interrupt_handler(){
 
       sti();
 
-      if(ctrl_flag){
 
+      if(alt_flag && (key_pressed == FUN_1)){
             old_display = current_display;
-
-            current_display++;
-
-            if(current_display == 3){
-                  current_display = 0;
-            }
-
+            current_display = 0;
             vidchange(old_display, current_display);
-
             task_switch(current_pid[current_display]);
+      }
 
+      if(alt_flag && (key_pressed == FUN_2)){
+            old_display = current_display;
+            current_display = 1;
+            vidchange(old_display, current_display);
+            task_switch(current_pid[current_display]);
+      }
 
+      if(alt_flag && (key_pressed == FUN_3)){
+            old_display = current_display;
+            current_display = 2;
+            vidchange(old_display, current_display);
+            task_switch(current_pid[current_display]);
       }
 
       return;
@@ -300,6 +297,11 @@ void handle_keyinput(unsigned char key_pressed){
       else if(shift_flag){
             tmp_k = keymappings_shift[key_pressed];
             printchar_term(tmp_k);
+      }
+      else if(alt_flag){
+            if(key_pressed == FUN_1 || key_pressed == FUN_2 || key_pressed == FUN_3){
+                  return;
+            }
       }
       else{
             tmp_k = keymappings[key_pressed];

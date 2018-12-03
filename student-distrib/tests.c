@@ -358,25 +358,6 @@ int driver_test(){
 /* Test suite entry point */
 void launch_tests(){
 
-	clear_term();
-
-	/*Tun all the driver tests*/
-	//driver_test();
-
-	fill_color();
-
-	current_display = 0;
-
-	init_terms();
-
-	prep_term_with_command((uint8_t *)"shell", 0);
-	prep_term_with_command((uint8_t *)"shell", 1);
-	prep_term_with_command((uint8_t *)"shell", 2);
-
-	task_switch(0);
-
-	while(1);
-
 	return;
 }
 
