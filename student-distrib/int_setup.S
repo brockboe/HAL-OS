@@ -12,7 +12,7 @@
 .globl common_interrupt
 .globl assembly_linkage
 .globl default_linkage
-.globl RTC, keyboard, SYSC
+.globl RTC, keyboard, SYSC, PIT
 
 #This is where the interrupt number is saved so it can be pushed later
 interrupt_num:
@@ -209,6 +209,10 @@ RTC:
 
 SYSC:
       PUSHL $0x80
+      JMP common_interrupt
+
+PIT:
+      PUSHL $0x20
       JMP common_interrupt
 
 #This is a table containing pointers to the linkage functions

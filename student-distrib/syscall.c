@@ -525,7 +525,7 @@ int32_t close_handler(int32_t fd){
       }
       else if(pcb->fd[fd].flags.in_use != 0){
             pcb->fd[fd].flags.in_use = 0;
-            return 0;
+            return;
       }
       return -1;
 }

@@ -6,11 +6,16 @@
 #include "x86_desc.h"
 #include "syscall.h"
 #include "filesys.h"
+#include "i8259.h"
 
-int current_display;
-int current_pid[3];
+volatile int current_display;
+volatile int current_pid[3];
+volatile int running_display;
 
 void init_terms(){
+      current_display = 0;
+      running_display = -1;
+
       current_pid[0] = 0;
       current_pid[1] = 1;
       current_pid[2] = 2;
@@ -23,7 +28,7 @@ void task_switch(int PID){
       //Task switching is comprised of the following steps:
       // 1. Save old process' EPB, ESP, and TSS
       // 2. Switch the paging for the new process
-      // 3. Switch the video memory, if necessary
+      // 3. Switch the video memory
       // 4. Load the new process' TSS, EBP, and ESP
       // 5. Restore these variables
       // 6. LEAVE and RET to start running the new process
@@ -52,10 +57,23 @@ void task_switch(int PID){
       init_control_reg(&(task_pd[PID].PDE[0]));
 
       //
-      // 3. Switch video memory, if necessary
+      // 3. Switch video memory
       //
 
+      page_table_entry_t temp_pte;
+      int pte_idx;
 
+      pte_idx = (VIDMEM >> 12) & 0x03FF;
+      temp_pte.val = paging_table[pte_idx];
+
+      if(running_display == current_display){
+            temp_pte.physical_page_addr = VIDMEM >> 12;
+      }
+      else{
+            temp_pte.physical_page_addr = (VIDMEM + _4KB*(running_display+1)) >> 12;
+      }
+
+      paging_table[pte_idx] = temp_pte.val;
 
       //
       // 4. Load the new process' TSS, EBP, and ESP
@@ -109,6 +127,16 @@ void task_switch(int PID){
 
 void vidchange(int from, int to){
 
+      page_table_entry_t temp_pte;
+      page_table_entry_t backup;
+      int pte_idx = (VIDMEM >> 12) & 0x03FF;
+      temp_pte.val = paging_table[pte_idx];
+      backup.val = paging_table[pte_idx];
+
+      //restore the paging structures to their original values
+      temp_pte.physical_page_addr = (VIDMEM >> 12);
+      paging_table[pte_idx] = temp_pte.val;
+
       // 1. Save the current video memory in the correct location
       (void)memcpy((void *)(VIDMEM + (from+1)*_4KB), (void *)VIDMEM, _4KB);
 
@@ -118,11 +146,12 @@ void vidchange(int from, int to){
       // 3. Update the cursor position
       move_cursor();
 
+      paging_table[pte_idx] = backup.val;
+
      return;
 }
 
 void setup_shells(){
-      cli();
       dentry_t temp_dentry;
       uint8_t entry_bytes[4];
       void * entry_point;
@@ -130,6 +159,8 @@ void setup_shells(){
       (void)read_dentry_by_name((uint8_t *)"shell", &temp_dentry);
       (void)file_read(temp_dentry.inode_num, 24, entry_bytes, 4);
       entry_point = (void *)((entry_bytes[3] << 24)|(entry_bytes[2] << 16)|(entry_bytes[1] << 8)|(entry_bytes[0]));
+
+      init_terms();
 
       for(PID = 0; PID <= 3; PID++){
             //set up the paging
@@ -181,7 +212,6 @@ void setup_shells(){
             void * user_sp = (void *)(_128MB + _4MB - 4);
 
             asm volatile("                      \n\
-                  STI                           \n\
                   MOVL %%ESP, %%EAX             \n\
                   MOVL %%EBP, %%EBX             \n\
                   MOVL %5, %%ESP                \n\

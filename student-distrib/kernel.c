@@ -16,6 +16,7 @@
 #include "filesys.h"
 #include "video.h"
 #include "term_sched.h"
+#include "pit.h"
 
 #define RUN_TESTS
 //#define RUN_EXCEPTION_TEST
@@ -169,6 +170,14 @@ void entry(unsigned long magic, unsigned long addr) {
     /*Initialize the video functions*/
     vid_init();
 
+    clear_term();
+
+    /* Prepare the shells to be ran */
+    setup_shells();
+
+    /* Init the pit*/
+    pit_init();
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -198,17 +207,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
     clear_term();
 
-    current_display = 0;
-
-    init_terms();
-
-    prep_term_with_command((uint8_t *)"shell", 0);
-    prep_term_with_command((uint8_t *)"shell", 1);
-    prep_term_with_command((uint8_t *)"shell", 2);
-
     task_switch(0);
-
-    while(1);
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");

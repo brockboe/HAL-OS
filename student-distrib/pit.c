@@ -2,6 +2,7 @@
 #include "pit.h"
 #include "i8259.h"
 #include "keyboard.h"
+#include "term_sched.h"
 
 /* definition of different PIT ports */
 #define PIT_REG       0x36
@@ -51,4 +52,15 @@ void pit_interrupt_handler(void)  {
    * to the current terminal. If it is, send EOI, else, modify dest ID to
    * dest = (dest+1) % TERMINAL_COUNT.
    */
+
+   send_eoi(0);
+
+   running_display++;
+   if(running_display > 2){
+         running_display = 0;
+   }
+
+   task_switch(current_pid[running_display]);
+
+   return;
 }

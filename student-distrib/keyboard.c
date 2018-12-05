@@ -244,14 +244,12 @@ void keyboard_interrupt_handler(){
             old_display = current_display;
             current_display = 1;
             vidchange(old_display, current_display);
-            task_switch(current_pid[current_display]);
       }
 
       if(alt_flag && (key_pressed == FUN_3)){
             old_display = current_display;
             current_display = 2;
             vidchange(old_display, current_display);
-            task_switch(current_pid[current_display]);
       }
 
       return;
