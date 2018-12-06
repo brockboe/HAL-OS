@@ -233,7 +233,7 @@ int32_t execute_handler(const uint8_t * command){
       //
 
       //find the first available PCB
-      for(i = 0; i < MAX_CONCURRENT_TASKS; i++){
+      for(i = 0; i < MAX_CONCURRENT_TASKS+1; i++){
             if(!task_pcb[i]->is_active){
                   PID = i;
                   break;

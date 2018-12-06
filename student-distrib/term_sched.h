@@ -8,8 +8,9 @@ extern volatile int flag_for_term_change;
 
 void setup_shells();
 void task_switch(int PID);
-void prep_term_with_command(uint8_t * command, int term_number);
 void vidchange(int from, int to);
 void init_terms();
+
+void asynchronous_task_switch(int new_display);
 
 #endif

@@ -232,15 +232,15 @@ void keyboard_interrupt_handler(){
 
       cli();
       if(alt_flag && (key_pressed == FUN_1)){
-            flag_for_term_change = 0;
+            asynchronous_task_switch(0);
       }
 
       if(alt_flag && (key_pressed == FUN_2)){
-            flag_for_term_change = 1;
+            asynchronous_task_switch(1);
       }
 
       if(alt_flag && (key_pressed == FUN_3)){
-            flag_for_term_change = 2;
+            asynchronous_task_switch(2);
       }
       sti();
 
