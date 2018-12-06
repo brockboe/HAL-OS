@@ -283,3 +283,15 @@ void print_num(int x){
       outb(0x3D4, 0x0B);
       outb((inb(0x3D5) & 0xE0) | tinfo[running_display].cursor_end, 0x3D5);
  }
+
+void flush_tlb(){
+      asm volatile("                \n\
+            MOVL %%CR3, %%EAX       \n\
+            MOVL %%EAX, %%CR3       \n\
+            "
+            :
+            :
+            :"eax"
+      );
+      return;
+}

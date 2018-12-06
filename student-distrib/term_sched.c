@@ -136,6 +136,8 @@ void vidchange(int from, int to){
       temp_pte.physical_page_addr = (VIDMEM >> 12);
       paging_table[pte_idx] = temp_pte.val;
 
+      flush_tlb();
+
       // 1. Save the current video memory in the correct location
       (void)memcpy((void *)(_3MB + (from)*_4KB), (void *)VIDMEM, _4KB);
 
@@ -148,6 +150,8 @@ void vidchange(int from, int to){
       if(current_display != running_display){
             paging_table[pte_idx] = backup.val;
       }
+
+      flush_tlb();
 
      return;
 }

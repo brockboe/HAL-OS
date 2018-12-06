@@ -96,7 +96,7 @@ int32_t vc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t b
     while(vc_buffer[running_display][0] == '\0');
 
     for(i = 0; i < bytes; i++){
-        buffer[i] = vc_buffer[current_display][i];
+        buffer[i] = vc_buffer[running_display][i];
         chars_written++;
     }
 

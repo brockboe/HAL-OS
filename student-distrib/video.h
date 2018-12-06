@@ -39,3 +39,5 @@ void print_num(int x);                         /* test function for printing num
 void fill_color(int vid_page, uint8_t color);  /* fills display with red              */
 
 void move_cursor();                             /* moves the cursor to the offset specified by tinfo*/
+
+void flush_tlb();                               /* Flushes the TLB */
