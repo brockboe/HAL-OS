@@ -55,9 +55,18 @@ void pit_interrupt_handler(void)  {
 
    send_eoi(0);
 
+   int old_display;
+
    running_display++;
    if(running_display > 2){
          running_display = 0;
+   }
+
+   if(flag_for_term_change != -1){
+         old_display = current_display;
+         current_display = flag_for_term_change;
+         flag_for_term_change = -1;
+         vidchange(old_display, current_display);
    }
 
    task_switch(current_pid[running_display]);

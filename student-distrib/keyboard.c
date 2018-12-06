@@ -125,8 +125,6 @@ void keyboard_init(void) {
  */
 
 void keyboard_interrupt_handler(){
-
-      int old_display;
       cli();
 
       unsigned char key_pressed;
@@ -231,24 +229,18 @@ void keyboard_interrupt_handler(){
       enable_irq(1);
 
       sti();
-      
+
       cli();
       if(alt_flag && (key_pressed == FUN_1)){
-            old_display = current_display;
-            current_display = 0;
-            vidchange(old_display, current_display);
+            flag_for_term_change = 0;
       }
 
       if(alt_flag && (key_pressed == FUN_2)){
-            old_display = current_display;
-            current_display = 1;
-            vidchange(old_display, current_display);
+            flag_for_term_change = 1;
       }
 
       if(alt_flag && (key_pressed == FUN_3)){
-            old_display = current_display;
-            current_display = 2;
-            vidchange(old_display, current_display);
+            flag_for_term_change = 2;
       }
       sti();
 

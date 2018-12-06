@@ -4,6 +4,7 @@
 extern volatile int current_display;
 extern volatile int running_display;
 extern volatile int current_pid[3];
+extern volatile int flag_for_term_change;
 
 void setup_shells();
 void task_switch(int PID);

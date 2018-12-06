@@ -11,6 +11,7 @@
 volatile int current_display;
 volatile int current_pid[3];
 volatile int running_display;
+volatile int flag_for_term_change = -1;
 
 void init_terms(){
       current_display = 0;
@@ -74,6 +75,8 @@ void task_switch(int PID){
       }
 
       paging_table[pte_idx] = temp_pte.val;
+
+      flush_tlb();
 
       //
       // 4. Load the new process' TSS, EBP, and ESP
@@ -146,10 +149,6 @@ void vidchange(int from, int to){
 
       // 3. Update the cursor position
       move_cursor();
-
-      if(current_display != running_display){
-            paging_table[pte_idx] = backup.val;
-      }
 
       flush_tlb();
 
