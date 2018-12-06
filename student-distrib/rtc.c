@@ -2,6 +2,7 @@
 #include "rtc.h"
 #include "i8259.h"
 #include "keyboard.h"
+#include "term_sched.h"
 
 #define REGISTER_A          0x8A
 #define REGISTER_B          0x8B
@@ -21,7 +22,7 @@ volatile unsigned int rtc_count = 0;
 
 /* Variable checks if rtc has been initialized */
 volatile unsigned int rtc_init_check = 0;
-volatile unsigned int rtc_interrupt_flag = 0;
+volatile unsigned int rtc_interrupt_flag[3];
 
 /* Variable checks if an interrupt has been raised */
 
@@ -52,6 +53,10 @@ void rtc_init(void) {
     /* Change value to one to show we've initialized the rtc */
     rtc_init_check = 1;
 
+    rtc_interrupt_flag[0] = 0;
+    rtc_interrupt_flag[1] = 0;
+    rtc_interrupt_flag[2] = 0;
+
     /* Re-enable interrupts */
     sti();
 }
@@ -64,7 +69,9 @@ void rtc_interrupt_handler(void) {
   send_eoi(RTC_IRQ_ON_MASTER);
 
   /* Set interrupt flag to 1 because an interrupt is occuring */
-  rtc_interrupt_flag = 1;
+  rtc_interrupt_flag[0] = 1;
+  rtc_interrupt_flag[1] = 1;
+  rtc_interrupt_flag[2] = 1;
 
   /* Used in a test case for checkpoint 1
   rtc_count++;
@@ -168,10 +175,10 @@ int32_t rtc_write(int32_t fd, const void * buf, int32_t nbytes) {
 /* Function that reads the RTC */
 int32_t rtc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes) {
     /* Spin while we wait for interrupts to get disabled */
-    while(!rtc_interrupt_flag) {}
+    while(!rtc_interrupt_flag[running_display]) {}
 
     /* When interrupt is completed, set to 0 */
-    rtc_interrupt_flag = 0;
+    rtc_interrupt_flag[running_display] = 0;
 
     return 0;
 }
