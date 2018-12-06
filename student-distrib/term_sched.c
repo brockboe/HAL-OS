@@ -129,6 +129,7 @@ void task_switch(int PID){
 //update the cursor location
 
 void vidchange(int from, int to){
+      cli();
       page_table_entry_t temp_pte;
       page_table_entry_t backup;
       int pte_idx = (VIDMEM >> 12) & 0x03FF;
@@ -151,6 +152,7 @@ void vidchange(int from, int to){
       move_cursor();
 
       flush_tlb();
+      sti();
 
      return;
 }

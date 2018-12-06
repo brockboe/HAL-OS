@@ -285,19 +285,19 @@ void handle_keyinput(unsigned char key_pressed){
       char tmp_k;
       if(shift_flag && cap_flag){
             tmp_k = keymappings_sc[key_pressed];
-            printchar_term(tmp_k);
+            echo_char_current_term(tmp_k);
       }
       else if(cap_flag){
             tmp_k = keymappings_caps[key_pressed];
-            printchar_term(tmp_k);
+            echo_char_current_term(tmp_k);
       }
       else if(shift_flag){
             tmp_k = keymappings_shift[key_pressed];
-            printchar_term(tmp_k);
+            echo_char_current_term(tmp_k);
       }
       else{
             tmp_k = keymappings[key_pressed];
-            printchar_term(tmp_k);
+            echo_char_current_term(tmp_k);
       }
 
       /* save it to the tmp buffer */
@@ -330,7 +330,7 @@ void enter_pressed(){
       tmpbuffer[current_display][next_available[current_display]] = '\n';
       next_available[current_display] ++;
 
-      printchar_term('\n');
+      echo_char_current_term('\n');
 
       /*copy the keyboard buffer to the official buffer */
       char* official = get_buffer();

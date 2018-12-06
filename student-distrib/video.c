@@ -2,6 +2,7 @@
 #include "lib.h"
 #include "vc.h"
 #include "term_sched.h"
+#include "paging.h"
 
 #define GREEN 0xA
 #define CYAN 0xB
@@ -12,6 +13,7 @@ vid_data_t * display;
 terminal_info_t tinfo[3];
 
 void move_cursor();
+void move_current_cursor();
 void enable_cursor();
 
 /* vid_init
@@ -107,6 +109,23 @@ void scroll_term(){
       move_cursor();
 }
 
+void scroll_term_current_term(){
+      int i;
+      //shift all the vidmem left by 80
+      for(i = TERMWIDTH; i < MAXCHAR; i++){
+            display[i - TERMWIDTH].character = display[i].character;
+      }
+      //set the cursor to the bottom row
+      tinfo[running_display].offset = TERMWIDTH * (TERMHEIGHT - 1);
+
+      //clear the bottom row
+      for(i = TERMWIDTH * (TERMHEIGHT - 1); i < MAXCHAR; i++){
+            display[i].character = 0;
+      }
+      move_cursor();
+}
+
+
 /* print_term
  * Description : behaves as a printf function printing the string of given length to the terminal
  * Input : string - character string to be printed to screen
@@ -168,6 +187,45 @@ void printchar_term(char a){
             tinfo[running_display].offset++;
       }
       move_cursor();
+}
+
+void echo_char_current_term(char a){
+
+      page_table_entry_t temp_pte;
+      page_table_entry_t backup;
+      int pte_idx = (VIDMEM >> 12) & 0x03FF;
+      temp_pte.val = paging_table[pte_idx];
+      backup.val = paging_table[pte_idx];
+
+      //restore the paging structures to their original values
+      temp_pte.physical_page_addr = (VIDMEM >> 12);
+      paging_table[pte_idx] = temp_pte.val;
+
+      flush_tlb();
+
+      //check for null character
+      if(a == '\0'){
+            return;
+      }
+      //check if we need to scroll
+      if(tinfo[current_display].offset >= MAXCHAR){
+            scroll_term_current_term();
+      }
+      //check for nl character
+      if(a == '\n'){
+            tinfo[current_display].offset -= tinfo[running_display].offset % TERMWIDTH;
+            tinfo[current_display].offset += TERMWIDTH;
+            move_cursor();
+      }
+      //otherwise print the character
+      else{
+            display[tinfo[current_display].offset].character = a;
+            tinfo[current_display].offset++;
+      }
+      move_current_cursor();
+
+      paging_table[pte_idx] = backup.val;
+      flush_tlb();
 }
 
 /* backspace
@@ -274,6 +332,14 @@ void print_num(int x){
        outb((uint8_t)(pos & 0xFF), 0x3D5);
        outb(0x0E, 0x3D4);
        outb((uint8_t)((pos >> 8)&0xFF), 0x3D5);
+ }
+
+ void move_current_cursor(){
+      uint32_t pos = tinfo[current_display].offset;
+      outb(0x0F, 0x3D4);
+      outb((uint8_t)(pos & 0xFF), 0x3D5);
+      outb(0x0E, 0x3D4);
+      outb((uint8_t)((pos >> 8)&0xFF), 0x3D5);
  }
 
  void enable_cursor(){
