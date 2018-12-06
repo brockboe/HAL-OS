@@ -4,6 +4,8 @@
 
 #define PAGE_SIZE 1024 //the size of 4kB
 #define PAGING_SHIFT 12 //to get the MS20 bits out by shifting 12 bits right
+#define _3MB 0x300000
+#define _4KB 0x1000
 
 /* This is a page directory entry for page table.  It goes in the Page Directory . */
 typedef struct page_directory_entry_4kb  {

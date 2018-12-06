@@ -80,8 +80,8 @@ void init_paging(){
          temp.pat = 0;
          temp.global = 0;
          temp.available = 0;
-         temp.physical_page_addr = (0x000B9);
-         paging_table[0xB9] = (uint32_t)temp.val;
+         temp.physical_page_addr = (_3MB >> 12);
+         paging_table[(_3MB >> 12) & 0x03FF] = (uint32_t)temp.val;
 
         // registering paging for termianl 2 video memory storage
          temp.present = 1;
@@ -94,8 +94,8 @@ void init_paging(){
          temp.pat = 0;
          temp.global = 0;
          temp.available = 0;
-         temp.physical_page_addr = (0x000BA);
-         paging_table[0xBA] = (uint32_t)temp.val;
+         temp.physical_page_addr = (_3MB + _4KB) >> 12;
+         paging_table[((_3MB + _4KB) >> 12) & 0x03FF] = (uint32_t)temp.val;
 
         // registering paging for terminal 3 video memory storage
          temp.present = 1;
@@ -108,8 +108,8 @@ void init_paging(){
          temp.pat = 0;
          temp.global = 0;
          temp.available = 0;
-         temp.physical_page_addr = (0x000BB);
-         paging_table[0xBB] = (uint32_t)temp.val;
+         temp.physical_page_addr = (_3MB + 2*_4KB) >> 12;
+         paging_table[((_3MB + 2*_4KB) >> 12) & 0x03FF] = (uint32_t)temp.val;
 
 
         // set the second entry of PD pointing to the kernel space

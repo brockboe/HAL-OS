@@ -70,7 +70,7 @@ void task_switch(int PID){
             temp_pte.physical_page_addr = VIDMEM >> 12;
       }
       else{
-            temp_pte.physical_page_addr = (VIDMEM + _4KB*(running_display+1)) >> 12;
+            temp_pte.physical_page_addr = (_3MB + _4KB*(running_display)) >> 12;
       }
 
       paging_table[pte_idx] = temp_pte.val;
@@ -126,7 +126,6 @@ void task_switch(int PID){
 //update the cursor location
 
 void vidchange(int from, int to){
-
       page_table_entry_t temp_pte;
       page_table_entry_t backup;
       int pte_idx = (VIDMEM >> 12) & 0x03FF;
@@ -138,15 +137,17 @@ void vidchange(int from, int to){
       paging_table[pte_idx] = temp_pte.val;
 
       // 1. Save the current video memory in the correct location
-      (void)memcpy((void *)(VIDMEM + (from+1)*_4KB), (void *)VIDMEM, _4KB);
+      (void)memcpy((void *)(_3MB + (from)*_4KB), (void *)VIDMEM, _4KB);
 
       // 2. Load the new terminals saved video memory into the real video memory
-      (void)memcpy( (void *)VIDMEM, (void *)(VIDMEM + (to+1)*_4KB), _4KB);
+      (void)memcpy((void *)VIDMEM, (void *)(_3MB + (to)*_4KB), _4KB);
 
       // 3. Update the cursor position
       move_cursor();
 
-      paging_table[pte_idx] = backup.val;
+      if(current_display != running_display){
+            paging_table[pte_idx] = backup.val;
+      }
 
      return;
 }

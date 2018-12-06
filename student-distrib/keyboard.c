@@ -231,13 +231,12 @@ void keyboard_interrupt_handler(){
       enable_irq(1);
 
       sti();
-
-
+      
+      cli();
       if(alt_flag && (key_pressed == FUN_1)){
             old_display = current_display;
             current_display = 0;
             vidchange(old_display, current_display);
-            task_switch(current_pid[current_display]);
       }
 
       if(alt_flag && (key_pressed == FUN_2)){
@@ -251,6 +250,7 @@ void keyboard_interrupt_handler(){
             current_display = 2;
             vidchange(old_display, current_display);
       }
+      sti();
 
       return;
 }

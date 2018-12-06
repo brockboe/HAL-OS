@@ -6,6 +6,7 @@
 #define GREEN 0xA
 #define CYAN 0xB
 #define RED 0xC
+#define _3MB 0x300000
 
 vid_data_t * display;
 terminal_info_t tinfo[3];
@@ -48,7 +49,13 @@ void vid_init(){
  */
 
 void fill_color(int vid_page, uint8_t color){
-      vid_data_t * temp_display = (vid_data_t *)(VIDMEM + vid_page * 0x1000);
+      vid_data_t * temp_display;
+      if(vid_page > 0){
+            temp_display = (vid_data_t *)(_3MB + (vid_page-1) * 0x1000);
+      }
+      else{
+            temp_display = (vid_data_t *)(VIDMEM);
+      }
 
       int i;
       //write the color information into the video memory
