@@ -222,7 +222,7 @@ void echo_char_current_term(char a){
             display[tinfo[current_display].offset].character = a;
             tinfo[current_display].offset++;
       }
-      move_current_cursor();
+      move_cursor();
 
       paging_table[pte_idx] = backup.val;
       flush_tlb();

@@ -25,6 +25,7 @@ int32_t syscall_dispatcher(uint32_t syscall_num, uint32_t arg1, uint32_t arg2, u
 
 extern page_directory_t task_pd[MAX_CONCURRENT_TASKS];
 extern PCB_t * task_pcb[MAX_CONCURRENT_TASKS];
+extern uint32_t vidmap_pt[1024];
 
 extern op_jmp_table_t vc_op_table;
 

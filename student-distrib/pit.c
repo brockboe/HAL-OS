@@ -3,6 +3,8 @@
 #include "i8259.h"
 #include "keyboard.h"
 #include "term_sched.h"
+#include "syscall.h"
+#include "video.h"
 
 /* definition of different PIT ports */
 #define PIT_REG       0x36
@@ -57,6 +59,8 @@ void pit_interrupt_handler(void)  {
 
    int old_display;
 
+   page_table_entry_t temp_pte;
+
    running_display++;
    if(running_display > 2){
          running_display = 0;
@@ -68,6 +72,17 @@ void pit_interrupt_handler(void)  {
          flag_for_term_change = -1;
          vidchange(old_display, current_display);
    }
+
+   temp_pte.val = vidmap_pt[(_132MB >> 12) & 0x03FF];
+
+   if(current_display == running_display){
+         temp_pte.physical_page_addr = (VIDMEM) >> 12;
+   }
+   else{
+         temp_pte.physical_page_addr = (_3MB + running_display*_4KB) >> 12;
+   }
+
+   vidmap_pt[(_132MB >> 12) & 0x03FF] = temp_pte.val;
 
    task_switch(current_pid[running_display]);
 

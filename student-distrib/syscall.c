@@ -31,7 +31,7 @@ PCB_t * task_pcb[MAX_CONCURRENT_TASKS] = {(PCB_t *)(_8MB - 2 * _8KB),
                                           (PCB_t *)(_8MB - 6 * _8KB),
                                           (PCB_t *)(_8MB - 7 * _8KB)};
 
-static uint32_t vidmap_pt[1024] __attribute__((aligned (_4KB)));
+uint32_t vidmap_pt[1024] __attribute__((aligned (_4KB)));
 
 //general format for device-specific io:
 //open(const uint8_t * filename)
@@ -525,7 +525,7 @@ int32_t close_handler(int32_t fd){
       }
       else if(pcb->fd[fd].flags.in_use != 0){
             pcb->fd[fd].flags.in_use = 0;
-            return;
+            return 0;
       }
       return -1;
 }
@@ -577,6 +577,17 @@ int32_t vidmap_handler(uint8_t ** screen_start){
       // if(screen_start == NULL)
       //     return -1; moved NULL check to syscall_dispatcher - presumably fine to do (delete this after syserr check)
 
+      cli();
+
+      uint32_t phys_mapping;
+
+      if(current_display == running_display){
+            phys_mapping = VIDMEM;
+      }
+      else{
+            phys_mapping = _3MB + running_display*_4KB;
+      }
+
       PCB_t * curr_pcb = get_pcb_ptr();
       uint32_t pid = curr_pcb->PID;
 
@@ -608,7 +619,7 @@ int32_t vidmap_handler(uint8_t ** screen_start){
 
       //add an entry to the page table
       page_table_entry_t temp_pte;
-      temp_pte.physical_page_addr = VIDMEM >> 12;
+      temp_pte.physical_page_addr = phys_mapping >> 12;
       temp_pte.available = 0;
       temp_pte.global = 0;
       temp_pte.cached = 0;
@@ -620,6 +631,8 @@ int32_t vidmap_handler(uint8_t ** screen_start){
       vidmap_pt[((_132MB >> 12) & 0x03FF)]  = temp_pte.val;
 
       *screen_start = (uint8_t *)_132MB;
+
+      sti();
 
       return 0;
 }
