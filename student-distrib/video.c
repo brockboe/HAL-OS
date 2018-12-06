@@ -213,7 +213,7 @@ void echo_char_current_term(char a){
       }
       //check for nl character
       if(a == '\n'){
-            tinfo[current_display].offset -= tinfo[running_display].offset % TERMWIDTH;
+            tinfo[current_display].offset -= tinfo[current_display].offset % TERMWIDTH;
             tinfo[current_display].offset += TERMWIDTH;
             move_cursor();
       }
