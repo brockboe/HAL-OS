@@ -684,6 +684,7 @@ void populate_alphanumeric(){
       alphanumeric[0x34] = (uint8_t)1;
       alphanumeric[0x35] = (uint8_t)1;
       alphanumeric[0x2B] = (uint8_t)1;
+      alphanumeric[0x39] = (uint8_t)1;
 
       return;
 

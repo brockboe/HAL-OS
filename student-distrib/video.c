@@ -236,12 +236,33 @@ void echo_char_current_term(char a){
  * RETURN : none
  */
 void backspace(){
-      tinfo[running_display].offset--;
-      if(tinfo[running_display].offset > MAXCHAR){
-            tinfo[running_display].offset = 0;
+
+      page_table_entry_t temp_pte;
+      page_table_entry_t backup;
+      int pte_idx = (VIDMEM >> 12) & 0x03FF;
+      temp_pte.val = paging_table[pte_idx];
+      backup.val = paging_table[pte_idx];
+
+      //restore the paging structures to their original values
+      temp_pte.physical_page_addr = (VIDMEM >> 12);
+      paging_table[pte_idx] = temp_pte.val;
+
+      flush_tlb();
+
+
+      tinfo[current_display].offset--;
+      if(tinfo[current_display].offset > MAXCHAR){
+            tinfo[current_display].offset = 0;
       }
-      display[tinfo[running_display].offset].character = 0;
-      move_cursor();
+
+      display[tinfo[current_display].offset].character = (uint8_t)0;
+
+      move_current_cursor();
+
+      paging_table[pte_idx] = backup.val;
+      flush_tlb();
+
+
       return;
 }
 
