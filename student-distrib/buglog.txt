@@ -18,5 +18,8 @@ Need to change:
 - write and read should directly call on the function instead of switch of fd 
 
 Checkpoint 5:
-
+- for typing in current display terminal, it actually wrote to the currently running one's memory 
+    - need to do the re map paging so that it shortly mapping the currently running process's vidmem to the currently displaying process's vidmem and then switch it back when it returned 
+    - flush the tlb when it did the termial switch 
+    - might be a fix: map the vidmem of backup vidmem below 3MB in the physical memory 
 - Xinyi saw a cockroach on the stair of Krannert Center on Friday, November 30th.
