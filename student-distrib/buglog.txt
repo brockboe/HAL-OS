@@ -6,20 +6,49 @@ Checkpoint 2:
 
 Checkpoint 3:
 
-- Mike saw a cockroach in the Union South Lounge on Wednesday, October 31st. 
+- Mike saw a cockroach in the Union South Lounge on Wednesday, October 31st.
+
+- Calling execute crashes the system
+      - fixed by updating assembly linkage at the end of execute
+
+- Execute does not save EBP and ESP correctly
+      - Caused by compiler not compiling assembly linkage correctly,
+        had to change writing of assembly
 
 Checkpoint 4:
 
+- Vidmap page faults when called
+      - Caused by paging structures not being set up correctly /
+        not having the correct permissions
 
+- Get args returns the wrong arguments
+      - Caused by accidentally writing the whole command into the
+        argdat array
+
+- Some non-alphanumeric keyboard keys fill the keyboard buffer
+  with garbage
+      - fixed by limiting what keys can put values into the keyboard buffer
 
 Need to change:
-- rtc not being cat properly 
-- user crash does not return to the kernel 
-- write and read should directly call on the function instead of switch of fd 
+- rtc not being cat properly
+- user crash does not return to the kernel
+- write and read should directly call on the function instead of switch of fd
 
 Checkpoint 5:
-- for typing in current display terminal, it actually wrote to the currently running one's memory 
-    - need to do the re map paging so that it shortly mapping the currently running process's vidmem to the currently displaying process's vidmem and then switch it back when it returned 
-    - flush the tlb when it did the termial switch 
-    - might be a fix: map the vidmem of backup vidmem below 3MB in the physical memory 
+- for typing in current display terminal, it actually wrote to the currently running one's memory
+    - need to do the re map paging so that it shortly mapping the currently running process's vidmem to the currently displaying process's vidmem and then switch it back when it returned
+    - flush the tlb when it did the termial switch
+    - might be a fix: map the vidmem of backup vidmem below 3MB in the physical memory
 - Xinyi saw a cockroach on the stair of Krannert Center on Friday, November 30th.
+- Brock saw a wolf spider outside his apartment building on Thursday, December 6th
+
+- When a background program closes the OS crashes
+      - caused by OS actually halting the currently shown program, not the
+        currently running program.
+
+- RTC seems to lag and jitter when multiple programs are using it
+      - caused by all programs using the same RTC flag. Changing the
+        flag into an array solves this problem
+
+- Video memory swapping does not work correctly, copies the wrong values
+      - Caused by not flushing the TLB correctly when changing paging structures
