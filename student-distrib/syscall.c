@@ -378,22 +378,10 @@ int32_t read_handler(int32_t fd, void* buf, int32_t n_bytes){
        if(fd < 0 || fd > 7){
              return -1;
        }
-
-       switch(fd){
-             case 0:
-                  //read from stdin
-                  return vc_read(curr_pcb->fd[fd].inode, curr_pcb->fd[fd].file_pos, (uint8_t *)buf, n_bytes);
-             case 1:
-                  // "read" from standard out, ie, produce an error
-                  return -1;
-             default:{
-                   //otherwise use the associated file handler in the file descriptor.
-                   int32_t retval;
-                   retval = (curr_pcb->fd[fd].actions->dev_read)(curr_pcb->fd[fd].inode, curr_pcb->fd[fd].file_pos, (uint8_t *)buf, n_bytes);
-                   curr_pcb->fd[fd].file_pos += retval;
-                   return retval;
-             }
-       }
+      int32_t retval;
+      retval = (curr_pcb->fd[fd].actions->dev_read)(curr_pcb->fd[fd].inode, curr_pcb->fd[fd].file_pos, (uint8_t *)buf, n_bytes);
+      curr_pcb->fd[fd].file_pos += retval;
+      return retval;
 }
 
 /* write_handler
@@ -424,18 +412,7 @@ int32_t write_handler(int32_t fd, const void * buf, int32_t n_bytes){
              return -1;
        }
 
-       switch(fd){
-             case 0:
-                  //"write" to standard intput, ie, produce an error
-                  return -1;
-             case 1:
-                  //write to standard output, the console
-                  return vc_write(fd, (const void *)buf, n_bytes);
-             default:
-                  //otherwise the associated file handler in the file descriptor
-                  //(should return an error)
-                  return (curr_pcb->fd[fd].actions->dev_write)(fd, (const void *)buf, n_bytes);
-       }
+      return (curr_pcb->fd[fd].actions->dev_write)(fd, (const void *)buf, n_bytes);
 }
 
 /* open_handler
