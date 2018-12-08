@@ -178,12 +178,10 @@ int32_t rtc_write(int32_t fd, const void * buf, int32_t nbytes) {
 
 /* Function that reads the RTC */
 int32_t rtc_read(uint32_t inode_index, uint32_t offset, uint8_t * buf, uint32_t nbytes) {
+    /* Set the flag to 0 so we wait for the handler to change it to 1 */
+    rtc_interrupt_flag[running_display] = 0;
     /* Spin while we wait for interrupts to get disabled */
     while(!rtc_interrupt_flag[running_display]) {}
-
-    /* When interrupt is completed, set to 0 */
-    rtc_interrupt_flag[running_display] = 0;
-
     return 0;
 }
 
