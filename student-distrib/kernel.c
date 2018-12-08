@@ -8,7 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
-
+#include "mouse.h"
 #include "int_setup.h"
 #include "rtc.h"
 #include "keyboard.h"
@@ -164,6 +164,9 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the keyboard */
     keyboard_init();
 
+    /* Initialize the mouse */
+    // mouse_init();
+
     /* Init paging*/
     init_paging();
 
@@ -192,6 +195,7 @@ void entry(unsigned long magic, unsigned long addr) {
 #ifdef RUN_TESTS
     /* Run tests */
     launch_tests();
+
 #endif
 
 #ifdef RUN_EXCEPTION_TEST
@@ -202,6 +206,7 @@ void entry(unsigned long magic, unsigned long addr) {
 #ifdef PAGE_FAULT_TEST
     /* Run test that will test page_faulting */
     launch_page_fault_test();
+
 #endif
     /* Execute the first program ("shell") ... */
 

@@ -12,6 +12,7 @@
 #include "keyboard.h"
 #include "syscall.h"
 #include "pit.h"
+#include "mouse.h"
 
 /*Total number of Intel-Defined interrupts*/
 #define NUM_INTEL_INTERRUPTS 30
@@ -29,6 +30,7 @@ extern void keyboard();
 extern void RTC();
 extern void SYSC();
 extern void PIT();
+extern void MOUSE();
 
 /*defualt_linkage is an external function that pushes 256 and then
  *calls common_interrupt. Because the highest possible vector number
@@ -80,7 +82,9 @@ void int_setup(){
       install_idt_entry(0x20, &PIT);
       install_idt_entry(0x21, &keyboard);
       install_idt_entry(0x28, &RTC);
+      install_idt_entry(0x2C, &MOUSE);
       install_trap_entry(0x80, &SYSC);
+
 
       /*Set up the first few interrupt vectors, which are intel
        *defined faults, exceptions, and errors.
@@ -115,6 +119,7 @@ void int_setup(){
       install_handler(0x28, rtc_interrupt_handler);
       install_handler(0x21, keyboard_interrupt_handler);
       install_handler(0x20, pit_interrupt_handler);
+      install_handler(0x2C, mouse_interrupt_handler);
 }
 
 /*C_int_Dispatcher is called whenever an interrupt occurs. The
