@@ -2,65 +2,55 @@
 #include "video.h"
 
 static int poll;
-
+/*
+ *  mouse_init(void)
+ *  DESCRIPTION: initialize the mouse driver by setting the status bit,
+ *  ensuring the enabling of aux devices and enabling the transfer of data.
+ *  No inputs or outputs
+ *
+ */
 void mouse_init(void){
       int8_t status;
       mouse_x = 0;
       mouse_y = 0;
       mouse_vx = 0;
       mouse_vy = 0;
-      enable_irq(12);
-      outb(0xA8, 0x64);                 //enable auxillary device (osdev said this couldn't hurt)
-      outb(0x20, 0x64);                 //retrieve status byte
-      status = inb(0x60);               //read status byte from keyboard
-      write_to_mouse(status | 0x02, 0); //update status bit to enable irq_12
-      write_to_mouse(0x47, 0);          //enable interrupts on mouse
-      write_to_mouse(0xf4, 1);          //tell mouse to start sending data
+      enable_irq(MOUSE_IRQ);
+      outb(AUX_DEVICE_CMD, MK_COMMAND_PORT);                 //enable auxillary device (osdev said this couldn't hurt)
+      outb(KEYBOARD_PORT, MK_COMMAND_PORT)   ;       //write to keyboard to set mouse status
+      outb(SET_STATUS_INIT, KEYBOARD_PORT);          //write mouse status byte 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1
+      // ||Always 0 ||	mode ||	enable||	scaling ||	Always 0	|| left btn ||	middle ||	right btn||//
+
+      outb(SEND_MOUSE_CMD, MK_COMMAND_PORT);         //write to mouse
+      outb(ENABLE_SGN_CMD, KEYBOARD_PORT);           //enable mouse to send data
 
       return;
 }
-
+/*
+ *  mouse_interrupt_handler(void)
+ *  DESCRIPTION: Mouse interrupt handler
+ *  TODO
+ *
+ */
 
 void mouse_interrupt_handler(void){
       //cli();
-      poll = inb(0x64);
-      poll = poll & 0x20;
-      if(poll != 0x20){
-        send_eoi(12);
+      poll = inb(MK_COMMAND_PORT);
+      poll = poll & MOUSE_CMD_CHECK;
+      if(poll != MOUSE_CMD_CHECK){
+        send_eoi(MOUSE_IRQ);
         return;
       }
 
-      int8_t input = inb(0x60);
-      int32_t x = inb(0x60);
-      int32_t y = inb(0x60);
+      int8_t input = inb(KEYBOARD_PORT);
+      int32_t x = inb(KEYBOARD_PORT);
+      int32_t y = inb(KEYBOARD_PORT);
 
 
       clear_term();
-      send_eoi(12);
+      send_eoi(MOUSE_IRQ);
     // enable_irq(12);
     //  sti();
       return;
 
-}
-
-
-/*  write_to_mouse(int8_t command, bool m_flag)
-    DESCRIPTION: helper function to make writing commands less tedious
-    PARAMETERS: int8_t command -- the command to be written to mouse/keyboard port
-                bool m_flag    -- flag indicating whether the command is written to keyboard or mouse
-    OUTPUTS: none
-    INPUTS: none
-
-*/
-
-void write_to_mouse(int8_t command, int m_flag){
-     if(!m_flag){
-         outb(0x60, 0x64)   ; //tell mouse command to be written
-         outb(command, 0x60);//write command to keyboard/mouse port
-     }
-     else{
-        outb(0xD4, 0x64);    //write to mouse
-        outb(command, 0x60);
-     }
-     return;
 }
