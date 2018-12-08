@@ -89,6 +89,8 @@ void rtc_interrupt_handler(void) {
 
 /* Function that opens the RTC */
 int32_t rtc_open(const uint8_t * filename) {
+
+      cli();
     /* if rtc hasn't been initialized, we want to initialize it */
     if(!rtc_init_check)
     {
@@ -103,6 +105,8 @@ int32_t rtc_open(const uint8_t * filename) {
     /* Set frequency to 2Hz */
     two_hertz = two_hertz | (FREQ_MASK & inb(REG_CMOS));
     outb(two_hertz, REG_CMOS);
+
+    sti();
 
     return 0;
 }

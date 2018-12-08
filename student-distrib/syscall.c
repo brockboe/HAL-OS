@@ -491,14 +491,17 @@ int32_t open_handler(const uint8_t * filename){
              case 0:
                   //RTC
                   (pcb->fd[fd_index].actions) = &rtc_op_table;
+                  (rtc_op_table.dev_open)(filename);
                   return fd_index;
              case 1:
                   //Directory
                   (pcb->fd[fd_index].actions) = &dir_op_table;
+                  (dir_op_table.dev_open)(filename);
                   return fd_index;
              case 2:
                   //Regular File
                   (pcb->fd[fd_index].actions) = &file_op_table;
+                  (file_op_table.dev_open)(filename);
                   return fd_index;
              default:
                   return -2;
