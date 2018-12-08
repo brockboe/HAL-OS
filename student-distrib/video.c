@@ -76,13 +76,30 @@ void fill_color(int vid_page, uint8_t color){
  */
 void clear_term(){
       int i;
+
+      page_table_entry_t temp_pte;
+      page_table_entry_t backup;
+      int pte_idx = (VIDMEM >> 12) & 0x03FF;
+      temp_pte.val = paging_table[pte_idx];
+      backup.val = paging_table[pte_idx];
+
+      //restore the paging structures to their original values
+      temp_pte.physical_page_addr = (VIDMEM >> 12);
+      paging_table[pte_idx] = temp_pte.val;
+
+      flush_tlb();
+
       //empty the character information in the video memory
       for(i = 0; i < MAXCHAR; i++){
             display[i].character = 0;
       }
       //set the cursor back to 0.
-      tinfo[running_display].offset = 0;
+      tinfo[current_display].offset = 0;
       move_cursor(); // FIXME: Clear shouldn't remove 391OS> and move_cursor needs to be fixed as well as a result
+
+      paging_table[pte_idx] = backup.val;
+      flush_tlb();
+
       return;
 }
 
@@ -222,7 +239,7 @@ void echo_char_current_term(char a){
             display[tinfo[current_display].offset].character = a;
             tinfo[current_display].offset++;
       }
-      move_cursor();
+      move_current_cursor();
 
       paging_table[pte_idx] = backup.val;
       flush_tlb();

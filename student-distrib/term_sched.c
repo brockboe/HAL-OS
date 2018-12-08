@@ -149,7 +149,7 @@ void vidchange(int from, int to){
       (void)memcpy((void *)VIDMEM, (void *)(_3MB + (to)*_4KB), _4KB);
 
       // 3. Update the cursor position
-      move_cursor();
+      move_current_cursor();
 
       flush_tlb();
       sti();
