@@ -1,16 +1,39 @@
 Checkpoint 1:
+- Compilation error with paing.C and paging.S
+       Fixed by changing the name of the file
+- Keyboard interrupts only working once
+-RTC interrupts not being received
+     Both were fixed by fixing an inequality sign in the PIC initialization
 
 Checkpoint 2:
 
 - Brock saw a sowbug in his bathtub on Wednesday, October 24th.
+- Keyboard not adding newline to vc_buffer
+   fixed by adding line to code that copies the vc_buffer over correctly
+-Shift / caps functionality
+   Made sure when capslock and shift were both set, lower case letters were printed
+-Keyboard functionality issues
+   Shift was not working
+   No | or \
+   Capslock prints psecial characters that should only be printed with shift
+   Shift is enter and enter does not work
+   
+   These issues were resolved by adding the mapping for all remaining characters
+   We added a separate conditional case for shift and expanded the keyboard buffer 
+   to its proper size of 256
+   
+-Keyboard makes "hole" terminal after scrolling
+   fixed by preventing keyboard from writing "\n" as a character to the screen
+   
+-Enter breaking keyboard echo
+   fixed by altering a faulty if statement that was causing the buffer index to overflow
+   
+-Capslock printing special character
+    created separate mapping for capslock so it did not print special characters
 
 Checkpoint 3:
 
 - Mike saw a cockroach in the Union South Lounge on Wednesday, October 31st.
-
-
-EARLIER ISSUES CAN BE FOUND IN THE "ISSUES" SECTION OF GITLAB
-https://piazza.com/class/jl733iiutpk2hj?cid=740 
 
 - Calling execute crashes the system
       - fixed by updating assembly linkage at the end of execute
