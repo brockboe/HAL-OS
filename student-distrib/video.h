@@ -43,3 +43,5 @@ void move_cursor();                             /* moves the cursor to the offse
 void flush_tlb();                               /* Flushes the TLB */
 
 void echo_char_current_term(char a);            /* Write to the current display */
+
+void move_current_cursor();			/* Move the cursor on the current screen */

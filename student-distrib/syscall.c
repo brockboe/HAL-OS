@@ -86,6 +86,15 @@ int32_t halt_handler(uint8_t status){
 
       current_pid[running_display] = current_pcb->parent_pcb->PID;
 
+      //call close on all the open files
+      int i;
+      for(i = 2; i < 8; i++){
+            if(task_pcb[current_pcb->PID]->fd[i].flags.in_use == 1){
+                  close(i);
+            }
+      }      
+
+
       //Set all the file descriptors to open
       task_pcb[current_pcb->PID]->fd[0].flags.in_use = 0;
       task_pcb[current_pcb->PID]->fd[1].flags.in_use = 0;
