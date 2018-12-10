@@ -8,7 +8,6 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
-#include "mouse.h"
 #include "int_setup.h"
 #include "rtc.h"
 #include "keyboard.h"
