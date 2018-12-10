@@ -8,6 +8,10 @@ Checkpoint 3:
 
 - Mike saw a cockroach in the Union South Lounge on Wednesday, October 31st.
 
+
+EARLIER ISSUES CAN BE FOUND IN THE "ISSUES" SECTION OF GITLAB
+https://piazza.com/class/jl733iiutpk2hj?cid=740 
+
 - Calling execute crashes the system
       - fixed by updating assembly linkage at the end of execute
 
