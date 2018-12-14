@@ -379,6 +379,10 @@ int32_t read_handler(int32_t fd, void* buf, int32_t n_bytes){
              return -1;
        }
 
+       if(fd == 1){
+             return -1;
+       }
+
        switch(fd){
              case 0:
                   //read from stdin
@@ -423,6 +427,10 @@ int32_t write_handler(int32_t fd, const void * buf, int32_t n_bytes){
        if(fd < 0 || fd > 7){
              return -1;
        }
+
+       if(fd == 0){
+             return -1;
+      }
 
        switch(fd){
              case 0:
