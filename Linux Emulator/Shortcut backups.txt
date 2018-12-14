@@ -1,0 +1,8 @@
+devel:
+C:\Users\Brock\school\ECE391\RemoteWork\qemu_win\qemu-system-i386w.exe  -hda "C:\Users\Brock\school\ECE391\RemoteWork\ece391_share\work\vm\devel.qcow" -m 512 -name devel
+
+test_debug:
+C:\Users\Brock\school\ECE391\RemoteWork\qemu_win\qemu-system-i386w.exe  -hda "C:\Users\Brock\school\ECE391\RemoteWork\ece391_share\work\vm\test.qcow" -kernel "C:\Users\Brock\school\ECE391\RemoteWork\ece391_share\work\source\linux-2.6.22.5\bzImage" -m 512 -gdb
+
+test_nodebug:
+C:\Users\Brock\school\ECE391\RemoteWork\qemu_win\qemu-system-i386w.exe  -hda "C:\Users\Brock\school\ECE391\RemoteWork\ece391_share\work\vm\test.qcow" -kernel "C:\Users\Brock\school\ECE391\RemoteWork\ece391_share\work\source\linux-2.6.22.5\bzImage" -m 512 -gdb
