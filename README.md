@@ -1,85 +1,48 @@
-LOGISTICS
------
-ECE 391 MP3 
+# HAL-OS
 
-Checkpoint 1 due Monday 10/22/2017, 6pm in GitLab
+## Project Information
 
-Checkpoint 2 due Monday 10/29/2017, 6pm in GitLab
+This operating system was developed with a team of 3 others over the course of a matter of months for ECE391 at
+the University of Illinois at Urbana-Champaign (UIUC). HAL-OS is a multitasking, protected mode, x86 operating
+system modeled after the linux kernel. It features:
 
-Checkpoint 3 due Monday 11/12/2017, 6pm in GitLab
+- basic in-memory filesystem
+- user / kernel privelege seperations
+- user programs
+- multitasking
+- memory paging / virtualization
+- X-mode video
+- pre-emptive scheduling
+- RTC, PS2 keyboard support
+- multiple active shells
+- system call support
+- colors! (perhaps not the most important feature...)
 
-Checkpoint 4 due Tuesday 11/27/2017, 6pm in GitLab
+## See the OS in action
 
-Checkpoint 5 due Monday 12/10/2017, 6pm in GitLab
+![alt text](https://drive.google.com/uc?export=view&id=1_t4iDPaJ_WlyP60CE_7i85CKzfZvDYPe)
 
+[Click here for a youtube video demo of various user programs on the OS](https://www.youtube.com/watch?v=FssrD9WGqA4&feature=youtu.be)*
 
-ACADEMIC INTEGRITY
------
-Please review the University of Illinois Student Code before starting,
-particularly all subsections of Article 1, Part 4 Academic Integrity and Procedure [here](http://studentcode.illinois.edu/article1_part4_1-401.html).
+[Click here for a youtube video demo of the multitasking features](https://www.youtube.com/watch?v=KSsCRFt93-Q&feature=youtu.be)*
 
-**§ 1‑402 Academic Integrity Infractions**
+*Note: different colors represent different shells in the operating system
 
-(a).	Cheating. No student shall use or attempt to use in any academic exercise materials, information, study aids, or electronic data that the student knows or should know is unauthorized. Instructors are strongly encouraged to make in advance a clear statement of their policies and procedures concerning the use of shared study aids, examination files, and related materials and forms of assistance. Such advance notification is especially important in the case of take-home examinations. During any examination, students should assume that external assistance (e.g., books, notes, calculators, and communications with others) is prohibited unless specifically authorized by the Instructor. A violation of this section includes but is not limited to:
+## Understanding the files
 
-(1)	Allowing others to conduct research or prepare any work for a student without prior authorization from the Instructor, including using the services of commercial term paper companies. 
+- Linux Emulator = Files used for QEMU emulation of the operating system
+- documents = documents given specifying design requirements, courtesty of ECE391 course staff. See this folder for more specific information about the operation and mechanics of the operating system
+- fish = code for the "fish" user program, shown in the above demo videos. This is a user program that shows a swimming fish in ASCII text
+- student-distrib = operating system source code
+- syscalls = more user programs. Fish gets it's own subdirectory because it is a rather complex program
 
-(2)	Submitting substantial portions of the same academic work for credit more than once or by more than one student without authorization from the Instructors to whom the work is being submitted. 
+## Running the operating system yourself
 
-(3) Working with another person without authorization to satisfy an individual assignment.
+For those so inclined to run this OS yourself, the OS image is under student-distrib/mp3.img. Running the OS is fairly straighforward, and it must be done in an emulator. It is ensured to be working on Qemu, but other emulators may work as well. To run it:
 
-(b) Plagiarism. No student shall represent the words, work, or ideas of another as his or her own in any academic endeavor. A violation of this section includes but is not limited to:
+1. download /student-distrib/mp3.img to your own pc. This is the image file that contains the entire operating system.
+2. download "/Linux Emulator/test_nodebug_mp3.bat"
+3. modify test_nodebug_mp3.bat to point towards where mp3.img is stored on your own PC
+4. run the batch file, and qemu should boot up and begin running the operating system. Note that we use GRUB to boot the OS.
 
-(1)	Copying: Submitting the work of another as one’s own. 
-
-(2)	Direct Quotation: Every direct quotation must be identified by quotation marks or by appropriate indentation and must be promptly cited. Proper citation style for many academic departments is outlined in such manuals as the MLA Handbook or K.L. Turabian’s A Manual for Writers of Term Papers, Theses and Dissertations. These and similar publications are available in the University bookstore or library. The actual source from which cited information was obtained should be acknowledged.
-
-(3)	Paraphrase: Prompt acknowledgment is required when material from another source is paraphrased or summarized in whole or in part. This is true even if the student’s words differ substantially from those of the source. A citation acknowledging only a directly quoted statement does not suffice as an acknowledgment of any preceding or succeeding paraphrased material. 
-
-(4)	Borrowed Facts or Information: Information obtained in one’s reading or research that is not common knowledge must be acknowledged. Examples of common knowledge might include the names of leaders of prominent nations, basic scientific laws, etc. Materials that contribute only to one’s general understanding of the subject may be acknowledged in a bibliography and need not be immediately cited. One citation is usually sufficient to acknowledge indebtedness when a number of connected sentences in the paper draw their special information from one source.
-
-(c) Fabrication. No student shall falsify or invent any information or citation in an academic endeavor. A violation of this section includes but is not limited to:
-
-(1)	Using invented information in any laboratory experiment or other academic endeavor without notice to and authorization from the Instructor or examiner. It would be improper, for example, to analyze one sample in an experiment and covertly invent data based on that single experiment for several more required analyses. 
-
-(2)	Altering the answers given for an exam after the examination has been graded. 
-
-(3)	Providing false or misleading information for the purpose of gaining an academic advantage.
-
-(d)	Facilitating Infractions of Academic Integrity. No student shall help or attempt to help another to commit an infraction of academic integrity, where one knows or should know that through one’s acts or omissions such an infraction may be facilitated. A violation of this section includes but is not limited to:
-
-(1)	Allowing another to copy from one’s work. 
-
-(2)	Taking an exam by proxy for someone else. This is an infraction of academic integrity on the part of both the student enrolled in the course and the proxy or substitute. 
-
-(3)	Removing an examination or quiz from a classroom, faculty office, or other facility without authorization.
-
-(e)	Bribes, Favors, and Threats. No student shall bribe or attempt to bribe, promise favors to or make threats against any person with the intent to affect a record of a grade or evaluation of academic performance. This includes conspiracy with another person who then takes the action on behalf of the student.
-
-(f)	Academic Interference. No student shall tamper with, alter, circumvent, or destroy any educational material or resource in a manner that deprives any other student of fair access or reasonable use of that material or resource. 
-
-(1)	Educational resources include but are not limited to computer facilities, electronic data, required/reserved readings, reference works, or other library materials. 
-
-(2)	Academic interference also includes acts in which the student committing the infraction personally benefits from the interference, regardless of the effect on other students.
-
-
-LEGAL
------
-Permission to use, copy, modify, and distribute this software and its
-documentation for any purpose, without fee, and without written agreement is
-hereby granted, provided that the above copyright notice and the following
-two paragraphs appear in all copies of this software.
-
-IN NO EVENT SHALL THE AUTHOR OR THE UNIVERSITY OF ILLINOIS BE LIABLE TO
-ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
-DAMAGES ARISING OUT  OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
-EVEN IF THE AUTHOR AND/OR THE UNIVERSITY OF ILLINOIS HAS BEEN ADVISED
-OF THE POSSIBILITY OF SUCH DAMAGE.
-
-THE AUTHOR AND THE UNIVERSITY OF ILLINOIS SPECIFICALLY DISCLAIM ANY
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE
-
-PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND NEITHER THE AUTHOR NOR
-THE UNIVERSITY OF ILLINOIS HAS ANY OBLIGATION TO PROVIDE MAINTENANCE,
-SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS."
+If on boot you happen to receive a "general protection" fault, this either means that you are running on real hardware (not all hardware runs the OS correctly) or I have uploaded the wrong image. If you get this error while running in an emulator, please contact me at the provided email.
